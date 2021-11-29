@@ -31,6 +31,8 @@ type UserMetaFactory struct {
 	sequenceTrait *userTrait
 
 	factoryTrait *userTrait
+
+	anonymousTrait *userTrait
 }
 type userTrait struct {
 	mutation userMutation
@@ -50,6 +52,9 @@ func (*userMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i int) 
 	return func(m *userMutation) {
 		m.nameType = TypeSequence
 		m.nameFunc = func(ctx context.Context, i *model.User, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx, c)
 			if err != nil {
 				return err
@@ -65,6 +70,9 @@ func (*userMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *model.Us
 	return func(m *userMutation) {
 		m.nameType = TypeLazy
 		m.nameFunc = func(ctx context.Context, i *model.User, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx, i)
 			if err != nil {
 				return err
@@ -91,6 +99,9 @@ func (*userMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (string,
 	return func(m *userMutation) {
 		m.nameType = TypeFactory
 		m.nameFunc = func(ctx context.Context, i *model.User, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx)
 			if err != nil {
 				return err
@@ -140,6 +151,9 @@ func (*userMutation) emailSequenceMutateFunc(fn func(ctx context.Context, i int)
 	return func(m *userMutation) {
 		m.emailType = TypeSequence
 		m.emailFunc = func(ctx context.Context, i *model.User, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx, c)
 			if err != nil {
 				return err
@@ -155,6 +169,9 @@ func (*userMutation) emailLazyMutateFunc(fn func(ctx context.Context, i *model.U
 	return func(m *userMutation) {
 		m.emailType = TypeLazy
 		m.emailFunc = func(ctx context.Context, i *model.User, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx, i)
 			if err != nil {
 				return err
@@ -181,6 +198,9 @@ func (*userMutation) emailFactoryMutateFunc(fn func(ctx context.Context) (string
 	return func(m *userMutation) {
 		m.emailType = TypeFactory
 		m.emailFunc = func(ctx context.Context, i *model.User, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx)
 			if err != nil {
 				return err
@@ -230,6 +250,9 @@ func (*userMutation) groupSequenceMutateFunc(fn func(ctx context.Context, i int)
 	return func(m *userMutation) {
 		m.groupType = TypeSequence
 		m.groupFunc = func(ctx context.Context, i *model.User, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx, c)
 			if err != nil {
 				return err
@@ -245,6 +268,9 @@ func (*userMutation) groupLazyMutateFunc(fn func(ctx context.Context, i *model.U
 	return func(m *userMutation) {
 		m.groupType = TypeLazy
 		m.groupFunc = func(ctx context.Context, i *model.User, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx, i)
 			if err != nil {
 				return err
@@ -271,6 +297,9 @@ func (*userMutation) groupFactoryMutateFunc(fn func(ctx context.Context) (*model
 	return func(m *userMutation) {
 		m.groupType = TypeFactory
 		m.groupFunc = func(ctx context.Context, i *model.User, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx)
 			if err != nil {
 				return err
@@ -347,6 +376,11 @@ func (f *UserMetaFactory) SetSequenceTrait(t *userTrait) *UserMetaFactory {
 
 func (f *UserMetaFactory) SetFactoryTrait(t *userTrait) *UserMetaFactory {
 	f.factoryTrait = t
+	return f
+}
+
+func (f *UserMetaFactory) SetAnonymousTrait(t *userTrait) *UserMetaFactory {
+	f.anonymousTrait = t
 	return f
 }
 
@@ -431,6 +465,18 @@ func (f *UserFactory) WithFactoryTrait() *UserBuilder {
 		return builder
 	}
 	for _, u := range f.meta.factoryTrait.updates {
+		u(&builder.mutation)
+	}
+	return builder
+}
+
+func (f *UserFactory) WithAnonymousTrait() *UserBuilder {
+	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
+	builder.factory = f
+	if f.meta.anonymousTrait == nil {
+		return builder
+	}
+	for _, u := range f.meta.anonymousTrait.updates {
 		u(&builder.mutation)
 	}
 	return builder
@@ -530,6 +576,16 @@ func (b *UserBuilder) WithFactoryTrait() *UserBuilder {
 		return b
 	}
 	for _, u := range b.factory.meta.factoryTrait.updates {
+		u(&b.mutation)
+	}
+	return b
+}
+
+func (b *UserBuilder) WithAnonymousTrait() *UserBuilder {
+	if b.factory.meta.anonymousTrait == nil {
+		return b
+	}
+	for _, u := range b.factory.meta.anonymousTrait.updates {
 		u(&b.mutation)
 	}
 	return b

@@ -34,6 +34,9 @@ func (*groupMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i int)
 	return func(m *groupMutation) {
 		m.nameType = TypeSequence
 		m.nameFunc = func(ctx context.Context, i *model.Group, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx, c)
 			if err != nil {
 				return err
@@ -49,6 +52,9 @@ func (*groupMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *model.G
 	return func(m *groupMutation) {
 		m.nameType = TypeLazy
 		m.nameFunc = func(ctx context.Context, i *model.Group, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx, i)
 			if err != nil {
 				return err
@@ -75,6 +81,9 @@ func (*groupMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (string
 	return func(m *groupMutation) {
 		m.nameType = TypeFactory
 		m.nameFunc = func(ctx context.Context, i *model.Group, c int) error {
+			if fn == nil {
+				return nil
+			}
 			value, err := fn(ctx)
 			if err != nil {
 				return err

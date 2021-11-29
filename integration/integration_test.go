@@ -48,7 +48,8 @@ func getStructFactory() *carrier.Factory {
 		).
 		SetFactoryTrait(factory.UserTrait().SetNameFactory(
 			func(ctx context.Context) (string, error) { return "factory_user", nil }),
-		)
+		).
+		SetAnonymousTrait(factory.UserTrait().SetNameDefault("anonymous").SetGroupFactory(nil))
 	_ = userMetaFactory.SetGroupFactory(groupFactory.Create)
 	userFactory := userMetaFactory.Build()
 	factory := &carrier.Factory{}
@@ -105,6 +106,7 @@ func TestSequenceCounter(t *testing.T) {
 	var wg sync.WaitGroup
 	mu := &sync.Mutex{}
 	var names []string
+	var groups []string
 	for i := 1; i <= 20; i++ {
 		wg.Add(1)
 		go func() {
@@ -113,16 +115,20 @@ func TestSequenceCounter(t *testing.T) {
 			require.Nil(t, err)
 			mu.Lock()
 			names = append(names, user.Name)
+			groups = append(groups, user.Group.Name)
 			mu.Unlock()
 
 		}()
 	}
 	wg.Wait()
 	var expected []string
+	var expectedGroups []string
 	for i := 1; i <= 20; i++ {
 		expected = append(expected, fmt.Sprintf("user-%d", i))
+		expectedGroups = append(expectedGroups, fmt.Sprintf("group-%d", i))
 	}
 	require.ElementsMatch(t, names, expected)
+	require.ElementsMatch(t, groups, expectedGroups)
 }
 
 func TestPost(t *testing.T) {
@@ -134,4 +140,17 @@ func TestPost(t *testing.T) {
 	user, err = f.UserFactory().Create(context.TODO())
 	require.Nil(t, err)
 	require.Equal(t, "user-2", user.Name)
+}
+
+func TestTrait(t *testing.T) {
+	f := getStructFactory()
+	user, err := f.UserFactory().Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "user-1", user.Name)
+	require.Equal(t, "group-1", user.Group.Name)
+
+	user, err = f.UserFactory().WithAnonymousTrait().Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "anonymous", user.Name)
+	require.Nil(t, user.Group)
 }

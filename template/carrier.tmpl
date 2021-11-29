@@ -55,6 +55,9 @@ import (
 	return func(m *{{$SchemaName | FirstLower}}Mutation) {
 	m.{{.Name | FirstLower}}Type = TypeSequence
 	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	if fn == nil {
+	return nil
+	}
 	value, err := fn(ctx, c)
 	if err != nil {
 	return err
@@ -72,6 +75,9 @@ import (
 	return func(m *{{$SchemaName | FirstLower}}Mutation) {
 	m.{{.Name | FirstLower}}Type = TypeLazy
 	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	if fn == nil {
+	return nil
+	}
 	value, err := fn(ctx, i)
 	if err != nil {
 	return err
@@ -102,6 +108,9 @@ import (
 	return func(m *{{$SchemaName | FirstLower}}Mutation) {
 	m.{{.Name | FirstLower}}Type = TypeFactory
 	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	if fn == nil {
+	return nil
+	}
 	value, err := fn(ctx)
 	if err != nil {
 	return err
