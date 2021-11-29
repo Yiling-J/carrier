@@ -190,7 +190,7 @@ import (
 
     {{range .Fields}}
 	func (f *{{$SchemaName}}Factory) Set{{.Name}}(i {{.ValueType}}) *{{$SchemaName}}Builder {
-	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter}
+	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.Set{{.Name}}(i)
 	return builder
 	}
@@ -198,6 +198,7 @@ import (
     {{range .Traits}}
 	func (f *{{$SchemaName}}Factory) With{{.}}Trait() *{{$SchemaName}}Builder {
 	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter}
+	builder.factory = f
 	if f.meta.{{. | FirstLower}}Trait == nil {
 	return builder
 	}
@@ -208,30 +209,31 @@ import (
 	}
     {{end}}
     func (f *{{$SchemaName}}Factory) Create(ctx context.Context) (*{{$SchemaType}}, error) {
-    builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter}
+    builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     return builder.Create(ctx)
     }
     func (f *{{$SchemaName}}Factory) CreateV(ctx context.Context) ({{$SchemaType}}, error) {
-    builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter}
+    builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     return builder.CreateV(ctx)
     }
     func (f *{{$SchemaName}}Factory) CreateBatch(ctx context.Context, n int) ([]*{{$SchemaType}}, error) {
-    builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter}
+    builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     return builder.CreateBatch(ctx, n)
     }
     func (f *{{$SchemaName}}Factory) CreateBatchV(ctx context.Context, n int) ([]{{$SchemaType}}, error) {
-    builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter}
+    builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     return builder.CreateBatchV(ctx, n)
     }
 
     {{if $EntSchema}}
 	func (f *{{$SchemaName}}Factory) Client(c *ent.Client) *{{$SchemaName}}Builder {
-	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, client: c}
+	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, client: c, factory: f}
 	return builder
 	}
     {{end}}
 
     type {{$SchemaName}}Builder struct {
+    factory *{{$SchemaName}}Factory
     mutation {{$SchemaName | FirstLower}}Mutation
     counter  *Counter
     {{range .Fields}}
@@ -263,6 +265,17 @@ import (
 	func (b *{{$SchemaName}}Builder) Set{{.Name}}Post(i {{.ValueType}}) *{{$SchemaName}}Builder {
 	b._post{{.Name}} = i
 	b._post{{.Name}}Set = true
+	return b
+	}
+    {{end}}
+    {{range .Traits}}
+	func (b *{{$SchemaName}}Builder) With{{.}}Trait() *{{$SchemaName}}Builder {
+	if b.factory.meta.{{. | FirstLower}}Trait == nil {
+	return b
+	}
+	for _, u := range b.factory.meta.{{. | FirstLower}}Trait.updates {
+	u(&b.mutation)
+	}
 	return b
 	}
     {{end}}

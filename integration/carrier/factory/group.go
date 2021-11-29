@@ -135,29 +135,30 @@ type GroupFactory struct {
 }
 
 func (f *GroupFactory) SetName(i string) *GroupBuilder {
-	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter}
+	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
 	return builder
 }
 
 func (f *GroupFactory) Create(ctx context.Context) (*model.Group, error) {
-	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter}
+	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	return builder.Create(ctx)
 }
 func (f *GroupFactory) CreateV(ctx context.Context) (model.Group, error) {
-	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter}
+	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	return builder.CreateV(ctx)
 }
 func (f *GroupFactory) CreateBatch(ctx context.Context, n int) ([]*model.Group, error) {
-	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter}
+	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	return builder.CreateBatch(ctx, n)
 }
 func (f *GroupFactory) CreateBatchV(ctx context.Context, n int) ([]model.Group, error) {
-	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter}
+	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	return builder.CreateBatchV(ctx, n)
 }
 
 type GroupBuilder struct {
+	factory  *GroupFactory
 	mutation groupMutation
 	counter  *Counter
 
