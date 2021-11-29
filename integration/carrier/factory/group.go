@@ -184,6 +184,7 @@ func (b *GroupBuilder) CreateV(ctx context.Context) (model.Group, error) {
 func (b *GroupBuilder) Create(ctx context.Context) (*model.Group, error) {
 
 	var preSlice = []func(ctx context.Context, i *model.Group, c int) error{}
+	var lazySlice = []func(ctx context.Context, i *model.Group, c int) error{}
 	var postSlice = []func(ctx context.Context, i *model.Group, c int) error{}
 
 	index := b.counter.Get()
@@ -202,7 +203,7 @@ func (b *GroupBuilder) Create(ctx context.Context) (*model.Group, error) {
 		case TypeDefault:
 			preSlice = append(preSlice, b.mutation.nameFunc)
 		case TypeLazy:
-			postSlice = append(postSlice, b.mutation.nameFunc)
+			lazySlice = append(lazySlice, b.mutation.nameFunc)
 		case TypeSequence:
 			preSlice = append(preSlice, b.mutation.nameFunc)
 		case TypeFactory:
@@ -212,6 +213,14 @@ func (b *GroupBuilder) Create(ctx context.Context) (*model.Group, error) {
 
 	v := &model.Group{}
 	for _, f := range preSlice {
+
+		err := f(ctx, v, index)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, f := range lazySlice {
 
 		err := f(ctx, v, index)
 

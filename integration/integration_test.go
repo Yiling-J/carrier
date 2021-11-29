@@ -27,6 +27,14 @@ func getStructFactory() *carrier.Factory {
 			return fmt.Sprintf("%s@test.com", i.Name), nil
 		},
 	)
+	_ = userMetaFactory.SetFooPostFunc(
+		func(ctx context.Context, set bool, obj *model.User, i string) error {
+			if set {
+				obj.Name += i
+			}
+			return nil
+		},
+	)
 	_ = userMetaFactory.
 		SetDefaultTrait(factory.UserTrait().SetNameDefault("default_user")).
 		SetSequenceTrait(factory.UserTrait().SetNameSequence(
@@ -60,6 +68,7 @@ func TestBasicWithTraits(t *testing.T) {
 		{"lazy test", factory.TypeLazy, "lazy_user"},
 		{"factory test", factory.TypeFactory, "factory_user"},
 		{"trait override", -1, "lazy_user"},
+		{"set override", -2, "over_user"},
 	}
 
 	for _, tc := range testCases {
@@ -78,6 +87,8 @@ func TestBasicWithTraits(t *testing.T) {
 				ub = uf.WithFactoryTrait()
 			case -1:
 				ub = uf.WithDefaultTrait().WithFactoryTrait().WithLazyTrait()
+			case -2:
+				ub = uf.WithSequenceTrait().SetName("over_user")
 			default:
 				t.FailNow()
 			}
@@ -112,4 +123,15 @@ func TestSequenceCounter(t *testing.T) {
 		expected = append(expected, fmt.Sprintf("user-%d", i))
 	}
 	require.ElementsMatch(t, names, expected)
+}
+
+func TestPost(t *testing.T) {
+	f := getStructFactory()
+	user, err := f.UserFactory().SetFooPost("foo").Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "user-1foo", user.Name)
+
+	user, err = f.UserFactory().Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "user-2", user.Name)
 }

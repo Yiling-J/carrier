@@ -17,6 +17,8 @@ type userMutation struct {
 	groupType int
 	groupFunc func(ctx context.Context, i *model.User, c int) error
 
+	_postFooFunc func(ctx context.Context, set bool, obj *model.User, i string) error
+
 	afterCreateFunc func(ctx context.Context, i *model.User) error
 }
 type UserMetaFactory struct {
@@ -314,6 +316,20 @@ func (t *userTrait) SetGroupFactory(fn func(ctx context.Context) (*model.Group, 
 	return t
 }
 
+func (*userMutation) fooPostMutateFunc(fn func(ctx context.Context, set bool, obj *model.User, i string) error) func(m *userMutation) {
+	return func(m *userMutation) {
+		m._postFooFunc = fn
+	}
+}
+func (f *UserMetaFactory) SetFooPostFunc(fn func(ctx context.Context, set bool, obj *model.User, i string) error) *UserMetaFactory {
+	f.mutation.fooPostMutateFunc(fn)(&f.mutation)
+	return f
+}
+func (t *userTrait) SetFooPostFunc(fn func(ctx context.Context, set bool, obj *model.User, i string) error) *userTrait {
+	t.updates = append(t.updates, t.mutation.fooPostMutateFunc(fn))
+	return t
+}
+
 func (f *UserMetaFactory) SetDefaultTrait(t *userTrait) *UserMetaFactory {
 	f.defaultTrait = t
 	return f
@@ -363,6 +379,12 @@ func (f *UserFactory) SetEmail(i string) *UserBuilder {
 func (f *UserFactory) SetGroup(i *model.Group) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetGroup(i)
+	return builder
+}
+
+func (f *UserFactory) SetFooPost(i string) *UserBuilder {
+	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+	builder.SetFooPost(i)
 	return builder
 }
 
@@ -444,6 +466,9 @@ type UserBuilder struct {
 
 	groupOverride  *model.Group
 	groupOverriden bool
+
+	_postFoo    string
+	_postFooSet bool
 }
 
 func (b *UserBuilder) SetName(i string) *UserBuilder {
@@ -461,6 +486,12 @@ func (b *UserBuilder) SetEmail(i string) *UserBuilder {
 func (b *UserBuilder) SetGroup(i *model.Group) *UserBuilder {
 	b.groupOverride = i
 	b.groupOverriden = true
+	return b
+}
+
+func (b *UserBuilder) SetFooPost(i string) *UserBuilder {
+	b._postFoo = i
+	b._postFooSet = true
 	return b
 }
 
@@ -516,6 +547,7 @@ func (b *UserBuilder) CreateV(ctx context.Context) (model.User, error) {
 func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 
 	var preSlice = []func(ctx context.Context, i *model.User, c int) error{}
+	var lazySlice = []func(ctx context.Context, i *model.User, c int) error{}
 	var postSlice = []func(ctx context.Context, i *model.User, c int) error{}
 
 	index := b.counter.Get()
@@ -534,7 +566,7 @@ func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 		case TypeDefault:
 			preSlice = append(preSlice, b.mutation.nameFunc)
 		case TypeLazy:
-			postSlice = append(postSlice, b.mutation.nameFunc)
+			lazySlice = append(lazySlice, b.mutation.nameFunc)
 		case TypeSequence:
 			preSlice = append(preSlice, b.mutation.nameFunc)
 		case TypeFactory:
@@ -555,7 +587,7 @@ func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 		case TypeDefault:
 			preSlice = append(preSlice, b.mutation.emailFunc)
 		case TypeLazy:
-			postSlice = append(postSlice, b.mutation.emailFunc)
+			lazySlice = append(lazySlice, b.mutation.emailFunc)
 		case TypeSequence:
 			preSlice = append(preSlice, b.mutation.emailFunc)
 		case TypeFactory:
@@ -576,7 +608,7 @@ func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 		case TypeDefault:
 			preSlice = append(preSlice, b.mutation.groupFunc)
 		case TypeLazy:
-			postSlice = append(postSlice, b.mutation.groupFunc)
+			lazySlice = append(lazySlice, b.mutation.groupFunc)
 		case TypeSequence:
 			preSlice = append(preSlice, b.mutation.groupFunc)
 		case TypeFactory:
@@ -584,8 +616,23 @@ func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 		}
 	}
 
+	if b.mutation._postFooFunc != nil {
+		postSlice = append(postSlice, func(ctx context.Context, i *model.User, c int) error {
+			err := b.mutation._postFooFunc(ctx, b._postFooSet, i, b._postFoo)
+			return err
+		})
+	}
+
 	v := &model.User{}
 	for _, f := range preSlice {
+
+		err := f(ctx, v, index)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+	for _, f := range lazySlice {
 
 		err := f(ctx, v, index)
 

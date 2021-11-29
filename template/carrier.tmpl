@@ -195,6 +195,13 @@ import (
 	return builder
 	}
     {{end}}
+    {{range .PostFields}}
+	func (f *{{$SchemaName}}Factory) Set{{.Name}}Post(i {{.ValueType}}) *{{$SchemaName}}Builder {
+	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+	builder.Set{{.Name}}Post(i)
+	return builder
+	}
+    {{end}}
     {{range .Traits}}
 	func (f *{{$SchemaName}}Factory) With{{.}}Trait() *{{$SchemaName}}Builder {
 	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter}
@@ -290,9 +297,11 @@ import (
     func (b *{{$SchemaName}}Builder) Create(ctx context.Context) (*{{$SchemaType}}, error) {
     {{if $EntSchema}}
 	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *ent.{{.Name}}Create) error{}
+	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *ent.{{.Name}}Create) error{}
 	var postSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *ent.{{.Name}}Create) error{}
     {{else}}
 	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
+	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
 	var postSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
     {{end}}
     index := b.counter.Get()
@@ -323,7 +332,7 @@ import (
 	case TypeDefault:
 	preSlice = append(preSlice, b.mutation.{{.Name | FirstLower}}Func)
 	case TypeLazy:
-	postSlice = append(postSlice, b.mutation.{{.Name | FirstLower}}Func)
+	lazySlice = append(lazySlice, b.mutation.{{.Name | FirstLower}}Func)
 	case TypeSequence:
 	preSlice = append(preSlice, b.mutation.{{.Name | FirstLower}}Func)
 	case TypeFactory:
@@ -331,9 +340,31 @@ import (
 	}
 	}
     {{end}}
+    {{range .PostFields}}
+	{{$DynamicParams := ""}}
+	{{if $EntSchema}}
+	    {{$DynamicParams = $RawSchemaName | printf "creator *ent.%sCreate"}}
+	{{end}}
+	if b.mutation._post{{.Name}}Func != nil {
+	postSlice = append(postSlice, func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	err := b.mutation._post{{.Name}}Func(ctx, b._post{{.Name}}Set, i, b._post{{.Name}})
+	return err
+	})
+	}
+    {{end}}
 
     v := &{{$SchemaType}}{}
     for _, f := range preSlice {
+    {{if $EntSchema}}
+	err := f(ctx, v, index, entBuilder)
+    {{else}}
+	err := f(ctx, v, index)
+    {{end}}
+    if err != nil {
+    return nil, err
+    }
+    }
+    for _, f := range lazySlice {
     {{if $EntSchema}}
 	err := f(ctx, v, index, entBuilder)
     {{else}}
