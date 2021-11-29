@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/Yiling-J/carrier/integration/carrier"
@@ -11,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func getFactory() *carrier.Factory {
+func getStructFactory() *carrier.Factory {
 	groupMetaFactory := carrier.GroupMetaFactory()
 	_ = groupMetaFactory.SetNameSequence(
 		func(ctx context.Context, i int) (string, error) { return fmt.Sprintf("group-%d", i), nil },
@@ -58,11 +59,12 @@ func TestBasicWithTraits(t *testing.T) {
 		{"sequence test", factory.TypeSequence, "1_user"},
 		{"lazy test", factory.TypeLazy, "lazy_user"},
 		{"factory test", factory.TypeFactory, "factory_user"},
+		{"trait override", -1, "lazy_user"},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			f := getFactory()
+			f := getStructFactory()
 			uf := f.UserFactory()
 			var ub *factory.UserBuilder
 			switch tc.Type {
@@ -74,12 +76,40 @@ func TestBasicWithTraits(t *testing.T) {
 				ub = uf.WithLazyTrait()
 			case factory.TypeFactory:
 				ub = uf.WithFactoryTrait()
+			case -1:
+				ub = uf.WithDefaultTrait().WithFactoryTrait().WithLazyTrait()
 			default:
 				t.FailNow()
 			}
 			user, err := ub.Create(context.TODO())
 			require.Nil(t, err)
 			require.Equal(t, tc.Expected, user.Name)
+			require.Equal(t, fmt.Sprintf("%s@test.com", tc.Expected), user.Email)
 		})
 	}
+}
+
+func TestSequenceCounter(t *testing.T) {
+	f := getStructFactory()
+	var wg sync.WaitGroup
+	mu := &sync.Mutex{}
+	var names []string
+	for i := 1; i <= 20; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			user, err := f.UserFactory().Create(context.TODO())
+			require.Nil(t, err)
+			mu.Lock()
+			names = append(names, user.Name)
+			mu.Unlock()
+
+		}()
+	}
+	wg.Wait()
+	var expected []string
+	for i := 1; i <= 20; i++ {
+		expected = append(expected, fmt.Sprintf("user-%d", i))
+	}
+	require.ElementsMatch(t, names, expected)
 }
