@@ -9,11 +9,22 @@ import (
 )
 {{ $Prefix := .Prefix  }}
 {{ $EntSchema := $Prefix | eq "Ent"  }}
+{{ $RawSchemaName := .Schema.Name  }}
+{{ $SchemaType := .Schema.Type  }}
+{{ $SchemaName := .Schema.Name | printf "%s%s" $Prefix  }}
+{{ $CreatedType := .Schema.Type  }}
+{{if $EntSchema}}
+    {{ $SchemaType = $SchemaName | printf "%sMutator" }}
+{{end}}
 
 {{with .Schema}}
-    {{ $RawSchemaName := .Name  }}
-    {{ $SchemaType := .Type  }}
-    {{ $SchemaName := .Name | printf "%s%s" $Prefix  }}
+    {{if $EntSchema}}
+	type {{$SchemaName}}Mutator struct {
+	{{range .Fields}}
+	    {{.Name}} {{.ValueType}}
+	{{end}}
+	}
+    {{end}}
     type {{$SchemaName | FirstLower}}Mutation struct {
     {{range .Fields}}
 	{{$DynamicParams := ""}}
@@ -24,9 +35,9 @@ import (
 	{{.Name | FirstLower}}Func func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error
     {{end}}
     {{range .PostFields}}
-	_post{{.Name}}Func func(ctx context.Context, set bool, obj *{{$SchemaType}}, i {{.ValueType}}) error
+	_post{{.Name}}Func func(ctx context.Context, set bool, obj *{{$CreatedType}}, i {{.ValueType}}) error
     {{end}}
-    afterCreateFunc func(ctx context.Context, i *{{$SchemaType}}) error
+    afterCreateFunc func(ctx context.Context, i *{{$CreatedType}}) error
     }
     type {{$SchemaName}}MetaFactory struct {
     mutation {{$SchemaName | FirstLower}}Mutation
@@ -41,7 +52,7 @@ import (
     func {{$SchemaName}}Trait() *{{$SchemaName | FirstLower}}Trait {
     return &{{$SchemaName | FirstLower}}Trait{}
     }
-    func (*{{$SchemaName | FirstLower}}Mutation) afterCreateMutateFunc(fn func(ctx context.Context, i *{{$SchemaType}}) error) func(m *{{$SchemaName | FirstLower}}Mutation) {
+    func (*{{$SchemaName | FirstLower}}Mutation) afterCreateMutateFunc(fn func(ctx context.Context, i *{{$CreatedType}}) error) func(m *{{$SchemaName | FirstLower}}Mutation) {
     return func(m *{{$SchemaName | FirstLower}}Mutation) {
     m.afterCreateFunc = fn
     }
@@ -160,16 +171,16 @@ import (
 	}
     {{end}}
     {{range .PostFields}}
-	func (*{{$SchemaName | FirstLower}}Mutation) {{.Name | FirstLower}}PostMutateFunc(fn func(ctx context.Context, set bool, obj *{{$SchemaType}}, i {{.ValueType}}) error) func(m *{{$SchemaName | FirstLower}}Mutation) {
+	func (*{{$SchemaName | FirstLower}}Mutation) {{.Name | FirstLower}}PostMutateFunc(fn func(ctx context.Context, set bool, obj *{{$CreatedType}}, i {{.ValueType}}) error) func(m *{{$SchemaName | FirstLower}}Mutation) {
 	return func(m *{{$SchemaName | FirstLower}}Mutation) {
 	m._post{{.Name}}Func = fn
 	}
 	}
-	func (f *{{$SchemaName}}MetaFactory) Set{{.Name}}PostFunc(fn func(ctx context.Context, set bool, obj *{{$SchemaType}}, i {{.ValueType}}) error) *{{$SchemaName}}MetaFactory {
+	func (f *{{$SchemaName}}MetaFactory) Set{{.Name}}PostFunc(fn func(ctx context.Context, set bool, obj *{{$CreatedType}}, i {{.ValueType}}) error) *{{$SchemaName}}MetaFactory {
 	f.mutation.{{.Name | FirstLower}}PostMutateFunc(fn)(&f.mutation)
 	return f
 	}
-	func (t *{{$SchemaName | FirstLower}}Trait) Set{{.Name}}PostFunc(fn func(ctx context.Context, set bool, obj *{{$SchemaType}}, i {{.ValueType}}) error) *{{$SchemaName | FirstLower}}Trait {
+	func (t *{{$SchemaName | FirstLower}}Trait) Set{{.Name}}PostFunc(fn func(ctx context.Context, set bool, obj *{{$CreatedType}}, i {{.ValueType}}) error) *{{$SchemaName | FirstLower}}Trait {
 	t.updates = append(t.updates, t.mutation.{{.Name | FirstLower}}PostMutateFunc(fn))
 	return t
 	}
@@ -180,7 +191,7 @@ import (
 	return f
 	}
     {{end}}
-    func (f *{{$SchemaName}}MetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *{{$SchemaType}}) error) *{{$SchemaName}}MetaFactory {
+    func (f *{{$SchemaName}}MetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *{{$CreatedType}}) error) *{{$SchemaName}}MetaFactory {
     f.mutation.afterCreateFunc = fn
     return f
     }
@@ -224,19 +235,19 @@ import (
 	return builder
 	}
     {{end}}
-    func (f *{{$SchemaName}}Factory) Create(ctx context.Context) (*{{$SchemaType}}, error) {
+    func (f *{{$SchemaName}}Factory) Create(ctx context.Context) (*{{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     return builder.Create(ctx)
     }
-    func (f *{{$SchemaName}}Factory) CreateV(ctx context.Context) ({{$SchemaType}}, error) {
+    func (f *{{$SchemaName}}Factory) CreateV(ctx context.Context) ({{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     return builder.CreateV(ctx)
     }
-    func (f *{{$SchemaName}}Factory) CreateBatch(ctx context.Context, n int) ([]*{{$SchemaType}}, error) {
+    func (f *{{$SchemaName}}Factory) CreateBatch(ctx context.Context, n int) ([]*{{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     return builder.CreateBatch(ctx, n)
     }
-    func (f *{{$SchemaName}}Factory) CreateBatchV(ctx context.Context, n int) ([]{{$SchemaType}}, error) {
+    func (f *{{$SchemaName}}Factory) CreateBatchV(ctx context.Context, n int) ([]{{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     return builder.CreateBatchV(ctx, n)
     }
@@ -296,22 +307,22 @@ import (
 	}
     {{end}}
 
-    func (b *{{$SchemaName}}Builder) CreateV(ctx context.Context) ({{$SchemaType}}, error) {
-    var d {{$SchemaType}}
+    func (b *{{$SchemaName}}Builder) CreateV(ctx context.Context) ({{$CreatedType}}, error) {
+    var d {{$CreatedType}}
     p, err := b.Create(ctx)
     if err == nil {d = *p}
     return d, err
     }
 
-    func (b *{{$SchemaName}}Builder) Create(ctx context.Context) (*{{$SchemaType}}, error) {
+    func (b *{{$SchemaName}}Builder) Create(ctx context.Context) (*{{$CreatedType}}, error) {
     {{if $EntSchema}}
 	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *ent.{{.Name}}Create) error{}
 	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *ent.{{.Name}}Create) error{}
-	var postSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *ent.{{.Name}}Create) error{}
+	var postSlice = []func(ctx context.Context, i *{{$CreatedType}}, c int, creator *ent.{{.Name}}Create) error{}
     {{else}}
 	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
 	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
-	var postSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
+	var postSlice = []func(ctx context.Context, i *{{$CreatedType}}, c int) error{}
     {{end}}
     index := b.counter.Get()
     _ = index
@@ -355,7 +366,7 @@ import (
 	    {{$DynamicParams = $RawSchemaName | printf "creator *ent.%sCreate"}}
 	{{end}}
 	if b.mutation._post{{.Name}}Func != nil {
-	postSlice = append(postSlice, func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	postSlice = append(postSlice, func(ctx context.Context, i *{{$CreatedType}}, c int, {{$DynamicParams}}) error {
 	err := b.mutation._post{{.Name}}Func(ctx, b._post{{.Name}}Set, i, b._post{{.Name}})
 	return err
 	})
@@ -384,32 +395,34 @@ import (
     }
     }
     {{if $EntSchema}}
-	v, err := entBuilder.Save(ctx)
+	new, err := entBuilder.Save(ctx)
 	if err != nil {
 	return nil, err
 	}
+    {{else}}
+	new := v
     {{end}}
     if b.mutation.afterCreateFunc != nil {
-    err := b.mutation.afterCreateFunc(ctx, v)
+    err := b.mutation.afterCreateFunc(ctx, new)
     if err != nil {
     return nil, err
     }
     }
     for _, f := range postSlice {
     {{if $EntSchema}}
-	err := f(ctx, v, index, entBuilder)
+	err := f(ctx, new, index, entBuilder)
     {{else}}
-	err := f(ctx, v, index)
+	err := f(ctx, new, index)
     {{end}}
     if err != nil {
     return nil, err
     }
     }
 
-    return v, nil
+    return new, nil
     }
-    func (b *{{$SchemaName}}Builder) CreateBatch(ctx context.Context, n int) ([]*{{$SchemaType}}, error) {
-    var results []*{{$SchemaType}}
+    func (b *{{$SchemaName}}Builder) CreateBatch(ctx context.Context, n int) ([]*{{$CreatedType}}, error) {
+    var results []*{{$CreatedType}}
     for i := 0; i < n; i++ {
     d, err := b.Create(ctx)
     if err != nil {
@@ -419,8 +432,8 @@ import (
     }
     return results, nil
     }
-    func (b *{{$SchemaName}}Builder) CreateBatchV(ctx context.Context, n int) ([]{{$SchemaType}}, error) {
-    var results []{{$SchemaType}}
+    func (b *{{$SchemaName}}Builder) CreateBatchV(ctx context.Context, n int) ([]{{$CreatedType}}, error) {
+    var results []{{$CreatedType}}
     for i := 0; i < n; i++ {
     d, err := b.CreateV(ctx)
     if err != nil {

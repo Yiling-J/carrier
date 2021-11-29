@@ -2,6 +2,7 @@ package schema
 
 import (
 	"github.com/Yiling-J/carrier"
+	"github.com/Yiling-J/carrier/integration/ent"
 	"github.com/Yiling-J/carrier/integration/model"
 )
 
@@ -14,6 +15,9 @@ var (
 			To:     model.User{},
 			Traits: []string{"default", "lazy", "sequence", "factory", "anonymous"},
 			Posts:  []carrier.PostField{{Name: "foo", Input: ""}},
+		},
+		&carrier.EntSchema{
+			To: &ent.UserCreate{},
 		},
 	}
 )

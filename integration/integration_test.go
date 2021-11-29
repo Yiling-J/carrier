@@ -154,3 +154,35 @@ func TestTrait(t *testing.T) {
 	require.Equal(t, "anonymous", user.Name)
 	require.Nil(t, user.Group)
 }
+
+func TestCreateV(t *testing.T) {
+	f := getStructFactory()
+	user, err := f.UserFactory().CreateV(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "user-1", user.Name)
+	require.Equal(t, "group-1", user.Group.Name)
+}
+
+func TestCreateBatch(t *testing.T) {
+	f := getStructFactory()
+	users, err := f.UserFactory().CreateBatch(context.TODO(), 3)
+	require.Nil(t, err)
+	require.Equal(t, 3, len(users))
+	var names []string
+	for _, user := range users {
+		names = append(names, user.Name)
+	}
+	require.Equal(t, []string{"user-1", "user-2", "user-3"}, names)
+}
+
+func TestCreateBatchV(t *testing.T) {
+	f := getStructFactory()
+	users, err := f.UserFactory().CreateBatchV(context.TODO(), 3)
+	require.Nil(t, err)
+	require.Equal(t, 3, len(users))
+	var names []string
+	for _, user := range users {
+		names = append(names, user.Name)
+	}
+	require.Equal(t, []string{"user-1", "user-2", "user-3"}, names)
+}

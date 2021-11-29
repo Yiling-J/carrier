@@ -3,6 +3,8 @@ package carrier
 
 import (
 	"github.com/Yiling-J/carrier/integration/carrier/factory"
+
+	"github.com/Yiling-J/carrier/integration/ent"
 )
 
 type Factory struct {
@@ -32,5 +34,28 @@ func (f *Factory) SetUserFactory(c *factory.UserFactory) *Factory {
 }
 
 func (f *Factory) UserFactory() *factory.UserFactory {
+	return f.userFactory
+}
+
+type EntFactory struct {
+	userFactory *factory.EntUserFactory
+
+	client *ent.Client
+}
+
+func (f *EntFactory) SetClient(c *ent.Client) {
+	f.client = c
+}
+
+func EntUserMetaFactory() *factory.EntUserMetaFactory {
+	return &factory.EntUserMetaFactory{}
+}
+func (f *EntFactory) SetUserFactory(c *factory.EntUserFactory) *EntFactory {
+	c.Client(f.client)
+	f.userFactory = c
+	return f
+}
+
+func (f *EntFactory) UserFactory() *factory.EntUserFactory {
 	return f.userFactory
 }

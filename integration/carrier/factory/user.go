@@ -697,22 +697,24 @@ func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 		}
 	}
 
+	new := v
+
 	if b.mutation.afterCreateFunc != nil {
-		err := b.mutation.afterCreateFunc(ctx, v)
+		err := b.mutation.afterCreateFunc(ctx, new)
 		if err != nil {
 			return nil, err
 		}
 	}
 	for _, f := range postSlice {
 
-		err := f(ctx, v, index)
+		err := f(ctx, new, index)
 
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return v, nil
+	return new, nil
 }
 func (b *UserBuilder) CreateBatch(ctx context.Context, n int) ([]*model.User, error) {
 	var results []*model.User

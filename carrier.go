@@ -73,6 +73,7 @@ func writeToSingle(name string, tvar templateVarSingle, path string) error {
 	var buf []byte
 	if buf, err = format.Source(b.Bytes()); err != nil {
 		fmt.Println("formating:", err)
+		fmt.Println(b.String())
 		return err
 	}
 
