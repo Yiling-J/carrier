@@ -2,9 +2,9 @@
 package carrier
 
 import (
-	"github.com/Yiling-J/carrier/integration/carrier/factory"
-
 	"github.com/Yiling-J/carrier/integration/ent"
+
+	"github.com/Yiling-J/carrier/integration/carrier/factory"
 )
 
 type Factory struct {

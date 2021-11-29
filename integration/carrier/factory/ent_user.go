@@ -53,6 +53,7 @@ func (*entUserMutation) ageSequenceMutateFunc(fn func(ctx context.Context, i int
 
 			creator.SetAge(value)
 
+			i.Age = value
 			return nil
 		}
 	}
@@ -71,6 +72,7 @@ func (*entUserMutation) ageLazyMutateFunc(fn func(ctx context.Context, i *EntUse
 
 			creator.SetAge(value)
 
+			i.Age = value
 			return nil
 		}
 	}
@@ -82,6 +84,7 @@ func (*entUserMutation) ageDefaultMutateFunc(v int) func(m *entUserMutation) {
 
 			creator.SetAge(v)
 
+			i.Age = v
 			return nil
 		}
 	}
@@ -99,6 +102,8 @@ func (*entUserMutation) ageFactoryMutateFunc(fn func(ctx context.Context) (int, 
 			}
 
 			creator.SetAge(value)
+
+			i.Age = value
 
 			return nil
 		}
@@ -152,6 +157,7 @@ func (*entUserMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i in
 
 			creator.SetName(value)
 
+			i.Name = value
 			return nil
 		}
 	}
@@ -170,6 +176,7 @@ func (*entUserMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *EntUs
 
 			creator.SetName(value)
 
+			i.Name = value
 			return nil
 		}
 	}
@@ -181,6 +188,7 @@ func (*entUserMutation) nameDefaultMutateFunc(v string) func(m *entUserMutation)
 
 			creator.SetName(v)
 
+			i.Name = v
 			return nil
 		}
 	}
@@ -198,6 +206,8 @@ func (*entUserMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (stri
 			}
 
 			creator.SetName(value)
+
+			i.Name = value
 
 			return nil
 		}
@@ -345,6 +355,7 @@ func (b *EntUserBuilder) Create(ctx context.Context) (*ent.User, error) {
 
 			creator.SetAge(value)
 
+			i.Age = value
 			return nil
 		})
 	} else {
@@ -366,6 +377,7 @@ func (b *EntUserBuilder) Create(ctx context.Context) (*ent.User, error) {
 
 			creator.SetName(value)
 
+			i.Name = value
 			return nil
 		})
 	} else {

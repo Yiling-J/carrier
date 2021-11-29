@@ -43,7 +43,6 @@ func (*groupMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i int)
 			}
 
 			i.Name = value
-
 			return nil
 		}
 	}
@@ -61,7 +60,6 @@ func (*groupMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *model.G
 			}
 
 			i.Name = value
-
 			return nil
 		}
 	}
@@ -72,7 +70,6 @@ func (*groupMutation) nameDefaultMutateFunc(v string) func(m *groupMutation) {
 		m.nameFunc = func(ctx context.Context, i *model.Group, c int) error {
 
 			i.Name = v
-
 			return nil
 		}
 	}
@@ -204,7 +201,6 @@ func (b *GroupBuilder) Create(ctx context.Context) (*model.Group, error) {
 			value := b.nameOverride
 
 			i.Name = value
-
 			return nil
 		})
 	} else {

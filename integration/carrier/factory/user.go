@@ -61,7 +61,6 @@ func (*userMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i int) 
 			}
 
 			i.Name = value
-
 			return nil
 		}
 	}
@@ -79,7 +78,6 @@ func (*userMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *model.Us
 			}
 
 			i.Name = value
-
 			return nil
 		}
 	}
@@ -90,7 +88,6 @@ func (*userMutation) nameDefaultMutateFunc(v string) func(m *userMutation) {
 		m.nameFunc = func(ctx context.Context, i *model.User, c int) error {
 
 			i.Name = v
-
 			return nil
 		}
 	}
@@ -160,7 +157,6 @@ func (*userMutation) emailSequenceMutateFunc(fn func(ctx context.Context, i int)
 			}
 
 			i.Email = value
-
 			return nil
 		}
 	}
@@ -178,7 +174,6 @@ func (*userMutation) emailLazyMutateFunc(fn func(ctx context.Context, i *model.U
 			}
 
 			i.Email = value
-
 			return nil
 		}
 	}
@@ -189,7 +184,6 @@ func (*userMutation) emailDefaultMutateFunc(v string) func(m *userMutation) {
 		m.emailFunc = func(ctx context.Context, i *model.User, c int) error {
 
 			i.Email = v
-
 			return nil
 		}
 	}
@@ -259,7 +253,6 @@ func (*userMutation) groupSequenceMutateFunc(fn func(ctx context.Context, i int)
 			}
 
 			i.Group = value
-
 			return nil
 		}
 	}
@@ -277,7 +270,6 @@ func (*userMutation) groupLazyMutateFunc(fn func(ctx context.Context, i *model.U
 			}
 
 			i.Group = value
-
 			return nil
 		}
 	}
@@ -288,7 +280,6 @@ func (*userMutation) groupDefaultMutateFunc(v *model.Group) func(m *userMutation
 		m.groupFunc = func(ctx context.Context, i *model.User, c int) error {
 
 			i.Group = v
-
 			return nil
 		}
 	}
@@ -614,7 +605,6 @@ func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 			value := b.nameOverride
 
 			i.Name = value
-
 			return nil
 		})
 	} else {
@@ -635,7 +625,6 @@ func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 			value := b.emailOverride
 
 			i.Email = value
-
 			return nil
 		})
 	} else {
@@ -656,7 +645,6 @@ func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 			value := b.groupOverride
 
 			i.Group = value
-
 			return nil
 		})
 	} else {

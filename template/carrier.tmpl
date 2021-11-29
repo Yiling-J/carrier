@@ -75,9 +75,8 @@ import (
 	}
 	{{if $EntSchema}}
 	    creator.{{.Setter}}(value)
-	{{else}}
-	    i.{{.Name}} = value
 	{{end}}
+	i.{{.Name}} = value
 	return nil
 	}
 	}
@@ -95,9 +94,8 @@ import (
 	}
 	{{if $EntSchema}}
 	    creator.{{.Setter}}(value)
-	{{else}}
-	    i.{{.Name}} = value
 	{{end}}
+	i.{{.Name}} = value
 	return nil
 	}
 	}
@@ -108,9 +106,8 @@ import (
 	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
 	{{if $EntSchema}}
 	    creator.{{.Setter}}(v)
-	{{else}}
-	    i.{{.Name}} = v
 	{{end}}
+	i.{{.Name}} = v
 	return nil
 	}
 	}
@@ -128,9 +125,8 @@ import (
 	}
 	{{if $EntSchema}}
 	    creator.{{.Setter}}(value)
-	{{else}}
-	    i.{{.Name}} = value
 	{{end}}
+	i.{{.Name}} = value
 
 	return nil
 	}
@@ -342,9 +338,8 @@ import (
 	value := b.{{.Name | FirstLower}}Override
 	{{if $EntSchema}}
 	    creator.{{.Setter}}(value)
-	{{else}}
-	    i.{{.Name}} = value
 	{{end}}
+	i.{{.Name}} = value
 	return nil
 	})
 	} else {
