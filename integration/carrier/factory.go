@@ -2,9 +2,9 @@
 package carrier
 
 import (
-	"github.com/Yiling-J/carrier/integration/ent"
-
 	"github.com/Yiling-J/carrier/integration/carrier/factory"
+
+	"github.com/Yiling-J/carrier/integration/ent"
 )
 
 type Factory struct {
@@ -51,11 +51,9 @@ func EntUserMetaFactory() *factory.EntUserMetaFactory {
 	return &factory.EntUserMetaFactory{}
 }
 func (f *EntFactory) SetUserFactory(c *factory.EntUserFactory) *EntFactory {
-	c.Client(f.client)
 	f.userFactory = c
 	return f
 }
-
 func (f *EntFactory) UserFactory() *factory.EntUserFactory {
-	return f.userFactory
+	return f.userFactory.Client(f.client)
 }

@@ -44,13 +44,11 @@ type Factory struct {
 	return &factory.Ent{{.Name}}MetaFactory{}
 	}
 	func (f *EntFactory) Set{{.Name}}Factory(c *factory.Ent{{.Name}}Factory) *EntFactory {
-	c.Client(f.client)
 	f.{{.Name | FirstLower}}Factory = c
 	return f
 	}
-
 	func (f *EntFactory) {{.Name}}Factory() *factory.Ent{{.Name}}Factory {
-	return f.{{.Name | FirstLower}}Factory
+	return f.{{.Name | FirstLower}}Factory.Client(f.client)
 	}
     {{end}}
 {{end}}

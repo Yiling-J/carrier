@@ -148,10 +148,12 @@ func (f *GroupFactory) SetName(i string) *GroupBuilder {
 
 func (f *GroupFactory) Create(ctx context.Context) (*model.Group, error) {
 	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
 	return builder.Create(ctx)
 }
 func (f *GroupFactory) CreateV(ctx context.Context) (model.Group, error) {
 	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
 	return builder.CreateV(ctx)
 }
 func (f *GroupFactory) CreateBatch(ctx context.Context, n int) ([]*model.Group, error) {

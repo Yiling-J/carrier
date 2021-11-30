@@ -277,10 +277,16 @@ func (f *EntUserFactory) SetName(i string) *EntUserBuilder {
 
 func (f *EntUserFactory) Create(ctx context.Context) (*ent.User, error) {
 	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
+	builder.client = f.client
+
 	return builder.Create(ctx)
 }
 func (f *EntUserFactory) CreateV(ctx context.Context) (ent.User, error) {
 	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
+	builder.client = f.client
+
 	return builder.CreateV(ctx)
 }
 func (f *EntUserFactory) CreateBatch(ctx context.Context, n int) ([]*ent.User, error) {
@@ -292,9 +298,9 @@ func (f *EntUserFactory) CreateBatchV(ctx context.Context, n int) ([]ent.User, e
 	return builder.CreateBatchV(ctx, n)
 }
 
-func (f *EntUserFactory) Client(c *ent.Client) *EntUserBuilder {
-	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, client: c, factory: f}
-	return builder
+func (f *EntUserFactory) Client(c *ent.Client) *EntUserFactory {
+	f.client = c
+	return f
 }
 
 type EntUserBuilder struct {

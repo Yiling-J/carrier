@@ -8,7 +8,9 @@ import (
 
 	"github.com/Yiling-J/carrier/integration/carrier"
 	"github.com/Yiling-J/carrier/integration/carrier/factory"
+	"github.com/Yiling-J/carrier/integration/ent"
 	"github.com/Yiling-J/carrier/integration/model"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/require"
 )
 
@@ -56,6 +58,26 @@ func getStructFactory() *carrier.Factory {
 	factory.SetGroupFactory(groupFactory)
 	factory.SetUserFactory(userFactory)
 	return factory
+}
+
+func getEntFactory() (*carrier.EntFactory, error) {
+	userFactory := carrier.EntUserMetaFactory().
+		SetNameSequence(
+			func(ctx context.Context, i int) (string, error) {
+				return fmt.Sprintf("user-%d", i), nil
+			},
+		).SetAgeDefault(20).
+		Build()
+	factory := &carrier.EntFactory{}
+	client, err := ent.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+	if err != nil {
+		return nil, err
+	}
+	if err := client.Schema.Create(context.Background()); err != nil {
+		return nil, err
+	}
+	factory.SetUserFactory(userFactory).SetClient(client)
+	return factory, nil
 }
 
 func TestBasicWithTraits(t *testing.T) {
@@ -185,4 +207,13 @@ func TestCreateBatchV(t *testing.T) {
 		names = append(names, user.Name)
 	}
 	require.Equal(t, []string{"user-1", "user-2", "user-3"}, names)
+}
+
+func TestEntBasic(t *testing.T) {
+	f, err := getEntFactory()
+	require.Nil(t, err)
+	user, err := f.UserFactory().Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, user.Name, "user-1")
+	require.Equal(t, user.ID, 1)
 }

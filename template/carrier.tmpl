@@ -233,10 +233,16 @@ import (
     {{end}}
     func (f *{{$SchemaName}}Factory) Create(ctx context.Context) (*{{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+    {{if $EntSchema}}
+	builder.client = f.client
+    {{end}}
     return builder.Create(ctx)
     }
     func (f *{{$SchemaName}}Factory) CreateV(ctx context.Context) ({{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+    {{if $EntSchema}}
+	builder.client = f.client
+    {{end}}
     return builder.CreateV(ctx)
     }
     func (f *{{$SchemaName}}Factory) CreateBatch(ctx context.Context, n int) ([]*{{$CreatedType}}, error) {
@@ -249,9 +255,9 @@ import (
     }
 
     {{if $EntSchema}}
-	func (f *{{$SchemaName}}Factory) Client(c *ent.Client) *{{$SchemaName}}Builder {
-	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, client: c, factory: f}
-	return builder
+	func (f *{{$SchemaName}}Factory) Client(c *ent.Client) *{{$SchemaName}}Factory {
+	f.client = c
+	return f
 	}
     {{end}}
 

@@ -475,10 +475,12 @@ func (f *UserFactory) WithAnonymousTrait() *UserBuilder {
 
 func (f *UserFactory) Create(ctx context.Context) (*model.User, error) {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
 	return builder.Create(ctx)
 }
 func (f *UserFactory) CreateV(ctx context.Context) (model.User, error) {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
 	return builder.CreateV(ctx)
 }
 func (f *UserFactory) CreateBatch(ctx context.Context, n int) ([]*model.User, error) {
