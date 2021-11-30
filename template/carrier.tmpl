@@ -208,6 +208,9 @@ import (
 	func (f *{{$SchemaName}}Factory) Set{{.Name}}(i {{.ValueType}}) *{{$SchemaName}}Builder {
 	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.Set{{.Name}}(i)
+	{{if $EntSchema}}
+	    builder.client = f.client
+	{{end}}
 	return builder
 	}
     {{end}}
@@ -215,6 +218,9 @@ import (
 	func (f *{{$SchemaName}}Factory) Set{{.Name}}Post(i {{.ValueType}}) *{{$SchemaName}}Builder {
 	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.Set{{.Name}}Post(i)
+	{{if $EntSchema}}
+	    builder.client = f.client
+	{{end}}
 	return builder
 	}
     {{end}}
@@ -222,6 +228,9 @@ import (
 	func (f *{{$SchemaName}}Factory) With{{.}}Trait() *{{$SchemaName}}Builder {
 	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
+	{{if $EntSchema}}
+	    builder.client = f.client
+	{{end}}
 	if f.meta.{{. | FirstLower}}Trait == nil {
 	return builder
 	}
@@ -247,10 +256,16 @@ import (
     }
     func (f *{{$SchemaName}}Factory) CreateBatch(ctx context.Context, n int) ([]*{{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+    {{if $EntSchema}}
+	builder.client = f.client
+    {{end}}
     return builder.CreateBatch(ctx, n)
     }
     func (f *{{$SchemaName}}Factory) CreateBatchV(ctx context.Context, n int) ([]{{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+    {{if $EntSchema}}
+	builder.client = f.client
+    {{end}}
     return builder.CreateBatchV(ctx, n)
     }
 

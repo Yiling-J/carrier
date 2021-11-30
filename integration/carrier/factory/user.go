@@ -392,30 +392,35 @@ type UserFactory struct {
 func (f *UserFactory) SetName(i string) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
+
 	return builder
 }
 
 func (f *UserFactory) SetEmail(i string) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetEmail(i)
+
 	return builder
 }
 
 func (f *UserFactory) SetGroup(i *model.Group) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetGroup(i)
+
 	return builder
 }
 
 func (f *UserFactory) SetFooPost(i string) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetFooPost(i)
+
 	return builder
 }
 
 func (f *UserFactory) WithDefaultTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
+
 	if f.meta.defaultTrait == nil {
 		return builder
 	}
@@ -428,6 +433,7 @@ func (f *UserFactory) WithDefaultTrait() *UserBuilder {
 func (f *UserFactory) WithLazyTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
+
 	if f.meta.lazyTrait == nil {
 		return builder
 	}
@@ -440,6 +446,7 @@ func (f *UserFactory) WithLazyTrait() *UserBuilder {
 func (f *UserFactory) WithSequenceTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
+
 	if f.meta.sequenceTrait == nil {
 		return builder
 	}
@@ -452,6 +459,7 @@ func (f *UserFactory) WithSequenceTrait() *UserBuilder {
 func (f *UserFactory) WithFactoryTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
+
 	if f.meta.factoryTrait == nil {
 		return builder
 	}
@@ -464,6 +472,7 @@ func (f *UserFactory) WithFactoryTrait() *UserBuilder {
 func (f *UserFactory) WithAnonymousTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
+
 	if f.meta.anonymousTrait == nil {
 		return builder
 	}
@@ -485,10 +494,12 @@ func (f *UserFactory) CreateV(ctx context.Context) (model.User, error) {
 }
 func (f *UserFactory) CreateBatch(ctx context.Context, n int) ([]*model.User, error) {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
 	return builder.CreateBatch(ctx, n)
 }
 func (f *UserFactory) CreateBatchV(ctx context.Context, n int) ([]model.User, error) {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
 	return builder.CreateBatchV(ctx, n)
 }
 

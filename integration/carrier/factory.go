@@ -40,6 +40,10 @@ func (f *Factory) UserFactory() *factory.UserFactory {
 type EntFactory struct {
 	userFactory *factory.EntUserFactory
 
+	carFactory *factory.EntCarFactory
+
+	groupFactory *factory.EntGroupFactory
+
 	client *ent.Client
 }
 
@@ -56,4 +60,26 @@ func (f *EntFactory) SetUserFactory(c *factory.EntUserFactory) *EntFactory {
 }
 func (f *EntFactory) UserFactory() *factory.EntUserFactory {
 	return f.userFactory.Client(f.client)
+}
+
+func EntCarMetaFactory() *factory.EntCarMetaFactory {
+	return &factory.EntCarMetaFactory{}
+}
+func (f *EntFactory) SetCarFactory(c *factory.EntCarFactory) *EntFactory {
+	f.carFactory = c
+	return f
+}
+func (f *EntFactory) CarFactory() *factory.EntCarFactory {
+	return f.carFactory.Client(f.client)
+}
+
+func EntGroupMetaFactory() *factory.EntGroupMetaFactory {
+	return &factory.EntGroupMetaFactory{}
+}
+func (f *EntFactory) SetGroupFactory(c *factory.EntGroupFactory) *EntFactory {
+	f.groupFactory = c
+	return f
+}
+func (f *EntFactory) GroupFactory() *factory.EntGroupFactory {
+	return f.groupFactory.Client(f.client)
 }

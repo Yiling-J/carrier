@@ -19,5 +19,11 @@ var (
 		&carrier.EntSchema{
 			To: &ent.UserCreate{},
 		},
+		&carrier.EntSchema{
+			To: &ent.CarCreate{},
+		},
+		&carrier.EntSchema{
+			To: &ent.GroupCreate{},
+		},
 	}
 )

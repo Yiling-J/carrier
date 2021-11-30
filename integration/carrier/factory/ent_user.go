@@ -10,12 +10,17 @@ import (
 type EntUserMutator struct {
 	Age int
 
+	Email string
+
 	Name string
 }
 
 type entUserMutation struct {
 	ageType int
 	ageFunc func(ctx context.Context, i *EntUserMutator, c int, creator *ent.UserCreate) error
+
+	emailType int
+	emailFunc func(ctx context.Context, i *EntUserMutator, c int, creator *ent.UserCreate) error
 
 	nameType int
 	nameFunc func(ctx context.Context, i *EntUserMutator, c int, creator *ent.UserCreate) error
@@ -143,6 +148,110 @@ func (t *entUserTrait) SetAgeFactory(fn func(ctx context.Context) (int, error)) 
 	return t
 }
 
+func (*entUserMutation) emailSequenceMutateFunc(fn func(ctx context.Context, i int) (string, error)) func(m *entUserMutation) {
+	return func(m *entUserMutation) {
+		m.emailType = TypeSequence
+		m.emailFunc = func(ctx context.Context, i *EntUserMutator, c int, creator *ent.UserCreate) error {
+			if fn == nil {
+				return nil
+			}
+			value, err := fn(ctx, c)
+			if err != nil {
+				return err
+			}
+
+			creator.SetEmail(value)
+
+			i.Email = value
+			return nil
+		}
+	}
+}
+func (*entUserMutation) emailLazyMutateFunc(fn func(ctx context.Context, i *EntUserMutator) (string, error)) func(m *entUserMutation) {
+	return func(m *entUserMutation) {
+		m.emailType = TypeLazy
+		m.emailFunc = func(ctx context.Context, i *EntUserMutator, c int, creator *ent.UserCreate) error {
+			if fn == nil {
+				return nil
+			}
+			value, err := fn(ctx, i)
+			if err != nil {
+				return err
+			}
+
+			creator.SetEmail(value)
+
+			i.Email = value
+			return nil
+		}
+	}
+}
+func (*entUserMutation) emailDefaultMutateFunc(v string) func(m *entUserMutation) {
+	return func(m *entUserMutation) {
+		m.emailType = TypeDefault
+		m.emailFunc = func(ctx context.Context, i *EntUserMutator, c int, creator *ent.UserCreate) error {
+
+			creator.SetEmail(v)
+
+			i.Email = v
+			return nil
+		}
+	}
+}
+func (*entUserMutation) emailFactoryMutateFunc(fn func(ctx context.Context) (string, error)) func(m *entUserMutation) {
+	return func(m *entUserMutation) {
+		m.emailType = TypeFactory
+		m.emailFunc = func(ctx context.Context, i *EntUserMutator, c int, creator *ent.UserCreate) error {
+			if fn == nil {
+				return nil
+			}
+			value, err := fn(ctx)
+			if err != nil {
+				return err
+			}
+
+			creator.SetEmail(value)
+
+			i.Email = value
+
+			return nil
+		}
+	}
+}
+
+func (f *EntUserMetaFactory) SetEmailSequence(fn func(ctx context.Context, i int) (string, error)) *EntUserMetaFactory {
+	f.mutation.emailSequenceMutateFunc(fn)(&f.mutation)
+	return f
+}
+func (f *EntUserMetaFactory) SetEmailLazy(fn func(ctx context.Context, i *EntUserMutator) (string, error)) *EntUserMetaFactory {
+	f.mutation.emailLazyMutateFunc(fn)(&f.mutation)
+	return f
+}
+func (f *EntUserMetaFactory) SetEmailDefault(v string) *EntUserMetaFactory {
+	f.mutation.emailDefaultMutateFunc(v)(&f.mutation)
+	return f
+}
+func (f *EntUserMetaFactory) SetEmailFactory(fn func(ctx context.Context) (string, error)) *EntUserMetaFactory {
+	f.mutation.emailFactoryMutateFunc(fn)(&f.mutation)
+	return f
+}
+func (t *entUserTrait) SetEmailSequence(fn func(ctx context.Context, i int) (string, error)) *entUserTrait {
+	t.updates = append(t.updates, t.mutation.emailSequenceMutateFunc(fn))
+	return t
+}
+func (t *entUserTrait) SetEmailLazy(fn func(ctx context.Context, i *EntUserMutator) (string, error)) *entUserTrait {
+	t.updates = append(t.updates, t.mutation.emailLazyMutateFunc(fn))
+	return t
+}
+func (t *entUserTrait) SetEmailDefault(v string) *entUserTrait {
+	t.updates = append(t.updates, t.mutation.emailDefaultMutateFunc(v))
+	return t
+}
+func (t *entUserTrait) SetEmailFactory(fn func(ctx context.Context) (string, error)) *entUserTrait {
+	t.updates = append(t.updates, t.mutation.emailFactoryMutateFunc(fn))
+	return t
+}
+
 func (*entUserMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i int) (string, error)) func(m *entUserMutation) {
 	return func(m *entUserMutation) {
 		m.nameType = TypeSequence
@@ -266,12 +375,27 @@ type EntUserFactory struct {
 func (f *EntUserFactory) SetAge(i int) *EntUserBuilder {
 	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetAge(i)
+
+	builder.client = f.client
+
+	return builder
+}
+
+func (f *EntUserFactory) SetEmail(i string) *EntUserBuilder {
+	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+	builder.SetEmail(i)
+
+	builder.client = f.client
+
 	return builder
 }
 
 func (f *EntUserFactory) SetName(i string) *EntUserBuilder {
 	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
+
+	builder.client = f.client
+
 	return builder
 }
 
@@ -291,10 +415,16 @@ func (f *EntUserFactory) CreateV(ctx context.Context) (ent.User, error) {
 }
 func (f *EntUserFactory) CreateBatch(ctx context.Context, n int) ([]*ent.User, error) {
 	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
+	builder.client = f.client
+
 	return builder.CreateBatch(ctx, n)
 }
 func (f *EntUserFactory) CreateBatchV(ctx context.Context, n int) ([]ent.User, error) {
 	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
+	builder.client = f.client
+
 	return builder.CreateBatchV(ctx, n)
 }
 
@@ -311,6 +441,9 @@ type EntUserBuilder struct {
 	ageOverride  int
 	ageOverriden bool
 
+	emailOverride  string
+	emailOverriden bool
+
 	nameOverride  string
 	nameOverriden bool
 
@@ -325,6 +458,12 @@ func (b *EntUserBuilder) Client(c *ent.Client) *EntUserBuilder {
 func (b *EntUserBuilder) SetAge(i int) *EntUserBuilder {
 	b.ageOverride = i
 	b.ageOverriden = true
+	return b
+}
+
+func (b *EntUserBuilder) SetEmail(i string) *EntUserBuilder {
+	b.emailOverride = i
+	b.emailOverriden = true
 	return b
 }
 
@@ -374,6 +513,28 @@ func (b *EntUserBuilder) Create(ctx context.Context) (*ent.User, error) {
 			preSlice = append(preSlice, b.mutation.ageFunc)
 		case TypeFactory:
 			preSlice = append(preSlice, b.mutation.ageFunc)
+		}
+	}
+
+	if b.emailOverriden {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntUserMutator, c int, creator *ent.UserCreate) error {
+			value := b.emailOverride
+
+			creator.SetEmail(value)
+
+			i.Email = value
+			return nil
+		})
+	} else {
+		switch b.mutation.emailType {
+		case TypeDefault:
+			preSlice = append(preSlice, b.mutation.emailFunc)
+		case TypeLazy:
+			lazySlice = append(lazySlice, b.mutation.emailFunc)
+		case TypeSequence:
+			preSlice = append(preSlice, b.mutation.emailFunc)
+		case TypeFactory:
+			preSlice = append(preSlice, b.mutation.emailFunc)
 		}
 	}
 

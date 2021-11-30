@@ -143,6 +143,7 @@ type GroupFactory struct {
 func (f *GroupFactory) SetName(i string) *GroupBuilder {
 	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
+
 	return builder
 }
 
@@ -158,10 +159,12 @@ func (f *GroupFactory) CreateV(ctx context.Context) (model.Group, error) {
 }
 func (f *GroupFactory) CreateBatch(ctx context.Context, n int) ([]*model.Group, error) {
 	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
 	return builder.CreateBatch(ctx, n)
 }
 func (f *GroupFactory) CreateBatchV(ctx context.Context, n int) ([]model.Group, error) {
 	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+
 	return builder.CreateBatchV(ctx, n)
 }
 

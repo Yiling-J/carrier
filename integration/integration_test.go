@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/Yiling-J/carrier/integration/carrier"
 	"github.com/Yiling-J/carrier/integration/carrier/factory"
@@ -26,7 +27,7 @@ func getStructFactory() *carrier.Factory {
 	)
 	_ = userMetaFactory.SetEmailLazy(
 		func(ctx context.Context, i *model.User) (string, error) {
-			return fmt.Sprintf("%s@test.com", i.Name), nil
+			return fmt.Sprintf("%s@test", i.Name), nil
 		},
 	)
 	_ = userMetaFactory.SetFooPostFunc(
@@ -51,7 +52,11 @@ func getStructFactory() *carrier.Factory {
 		SetFactoryTrait(factory.UserTrait().SetNameFactory(
 			func(ctx context.Context) (string, error) { return "factory_user", nil }),
 		).
-		SetAnonymousTrait(factory.UserTrait().SetNameDefault("anonymous").SetGroupFactory(nil))
+		SetAnonymousTrait(factory.UserTrait().SetNameDefault("anonymous").SetGroupFactory(nil)).
+		SetAfterCreateFunc(func(ctx context.Context, i *model.User) error {
+			i.Email = i.Email + ".com"
+			return nil
+		})
 	_ = userMetaFactory.SetGroupFactory(groupFactory.Create)
 	userFactory := userMetaFactory.Build()
 	factory := &carrier.Factory{}
@@ -67,7 +72,15 @@ func getEntFactory() (*carrier.EntFactory, error) {
 				return fmt.Sprintf("user-%d", i), nil
 			},
 		).SetAgeDefault(20).
+		SetEmailLazy(func(ctx context.Context, i *factory.EntUserMutator) (string, error) {
+			return fmt.Sprintf("%s@test.com", i.Name), nil
+		}).
 		Build()
+	carFactory := carrier.EntCarMetaFactory().
+		SetModelDefault("Tesla").
+		SetOwnerFactory(userFactory.Create).
+		Build()
+
 	factory := &carrier.EntFactory{}
 	client, err := ent.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 	if err != nil {
@@ -76,7 +89,7 @@ func getEntFactory() (*carrier.EntFactory, error) {
 	if err := client.Schema.Create(context.Background()); err != nil {
 		return nil, err
 	}
-	factory.SetUserFactory(userFactory).SetClient(client)
+	factory.SetUserFactory(userFactory).SetCarFactory(carFactory).SetClient(client)
 	return factory, nil
 }
 
@@ -216,4 +229,14 @@ func TestEntBasic(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, user.Name, "user-1")
 	require.Equal(t, user.ID, 1)
+	require.Equal(t, *user.Email, "user-1@test.com")
+
+	car, err := f.CarFactory().SetRegisteredAt(time.Now()).Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "Tesla", car.Model)
+	require.Equal(t, car.ID, 1)
+	owner, err := car.QueryOwner().First(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "user-2", owner.Name)
+	require.Equal(t, owner.ID, 1)
 }
