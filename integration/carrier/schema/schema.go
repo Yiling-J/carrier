@@ -13,7 +13,7 @@ var (
 		},
 		&carrier.StructSchema{
 			To:     model.User{},
-			Traits: []string{"default", "lazy", "sequence", "factory", "anonymous"},
+			Traits: []string{"default", "lazy", "sequence", "factory", "anonymous", "nil"},
 			Posts:  []carrier.PostField{{Name: "foo", Input: ""}},
 		},
 		&carrier.EntSchema{

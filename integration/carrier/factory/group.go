@@ -130,6 +130,10 @@ func (f *GroupMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *mo
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+func (t *groupTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Group) error) *groupTrait {
+	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
 
 func (f *GroupMetaFactory) Build() *GroupFactory {
 	return &GroupFactory{meta: *f, counter: &Counter{}}

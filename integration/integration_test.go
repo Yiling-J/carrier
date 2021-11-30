@@ -53,6 +53,9 @@ func getStructFactory() *carrier.Factory {
 			func(ctx context.Context) (string, error) { return "factory_user", nil }),
 		).
 		SetAnonymousTrait(factory.UserTrait().SetNameDefault("anonymous").SetGroupFactory(nil)).
+		SetNilTrait(
+			factory.UserTrait().SetNameFactory(nil).SetEmailLazy(nil).SetGroupSequence(nil).SetAfterCreateFunc(nil),
+		).
 		SetAfterCreateFunc(func(ctx context.Context, i *model.User) error {
 			i.Email = i.Email + ".com"
 			return nil
@@ -82,7 +85,7 @@ func getEntFactory() (*carrier.EntFactory, error) {
 		Build()
 
 	factory := &carrier.EntFactory{}
-	client, err := ent.Open("sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+	client, err := ent.Open("sqlite3", ":memory:?_fk=1")
 	if err != nil {
 		return nil, err
 	}
@@ -134,6 +137,15 @@ func TestBasicWithTraits(t *testing.T) {
 			require.Equal(t, fmt.Sprintf("%s@test.com", tc.Expected), user.Email)
 		})
 	}
+}
+
+func TestNilFunc(t *testing.T) {
+	f := getStructFactory()
+	user, err := f.UserFactory().WithNilTrait().Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, user.Name, "")
+	require.Equal(t, user.Email, "")
+	require.True(t, user.Group == nil)
 }
 
 func TestSequenceCounter(t *testing.T) {
@@ -238,5 +250,5 @@ func TestEntBasic(t *testing.T) {
 	owner, err := car.QueryOwner().First(context.TODO())
 	require.Nil(t, err)
 	require.Equal(t, "user-2", owner.Name)
-	require.Equal(t, owner.ID, 1)
+	require.Equal(t, owner.ID, 2)
 }

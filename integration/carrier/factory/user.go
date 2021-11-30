@@ -33,6 +33,8 @@ type UserMetaFactory struct {
 	factoryTrait *userTrait
 
 	anonymousTrait *userTrait
+
+	nilTrait *userTrait
 }
 type userTrait struct {
 	mutation userMutation
@@ -375,9 +377,18 @@ func (f *UserMetaFactory) SetAnonymousTrait(t *userTrait) *UserMetaFactory {
 	return f
 }
 
+func (f *UserMetaFactory) SetNilTrait(t *userTrait) *UserMetaFactory {
+	f.nilTrait = t
+	return f
+}
+
 func (f *UserMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *model.User) error) *UserMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
+}
+func (t *userTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.User) error) *userTrait {
+	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
 }
 
 func (f *UserMetaFactory) Build() *UserFactory {
@@ -477,6 +488,19 @@ func (f *UserFactory) WithAnonymousTrait() *UserBuilder {
 		return builder
 	}
 	for _, u := range f.meta.anonymousTrait.updates {
+		u(&builder.mutation)
+	}
+	return builder
+}
+
+func (f *UserFactory) WithNilTrait() *UserBuilder {
+	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
+	builder.factory = f
+
+	if f.meta.nilTrait == nil {
+		return builder
+	}
+	for _, u := range f.meta.nilTrait.updates {
 		u(&builder.mutation)
 	}
 	return builder
@@ -590,6 +614,16 @@ func (b *UserBuilder) WithAnonymousTrait() *UserBuilder {
 		return b
 	}
 	for _, u := range b.factory.meta.anonymousTrait.updates {
+		u(&b.mutation)
+	}
+	return b
+}
+
+func (b *UserBuilder) WithNilTrait() *UserBuilder {
+	if b.factory.meta.nilTrait == nil {
+		return b
+	}
+	for _, u := range b.factory.meta.nilTrait.updates {
 		u(&b.mutation)
 	}
 	return b

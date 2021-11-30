@@ -191,6 +191,10 @@ import (
     f.mutation.afterCreateFunc = fn
     return f
     }
+    func (t *{{$SchemaName | FirstLower}}Trait) SetAfterCreateFunc(fn func(ctx context.Context, i *{{$CreatedType}}) error) *{{$SchemaName | FirstLower}}Trait {
+    t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+    return t
+    }
 
     func (f *{{$SchemaName}}MetaFactory) Build() *{{$SchemaName}}Factory {
     return &{{$SchemaName}}Factory{meta: *f, counter: &Counter{}}

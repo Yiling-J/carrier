@@ -142,6 +142,10 @@ func (f *EntGroupMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i 
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+func (t *entGroupTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Group) error) *entGroupTrait {
+	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
 
 func (f *EntGroupMetaFactory) Build() *EntGroupFactory {
 	return &EntGroupFactory{meta: *f, counter: &Counter{}}

@@ -360,6 +360,10 @@ func (f *EntUserMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+func (t *entUserTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.User) error) *entUserTrait {
+	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
 
 func (f *EntUserMetaFactory) Build() *EntUserFactory {
 	return &EntUserFactory{meta: *f, counter: &Counter{}}

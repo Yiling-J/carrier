@@ -471,6 +471,10 @@ func (f *EntCarMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *e
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+func (t *entCarTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Car) error) *entCarTrait {
+	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
 
 func (f *EntCarMetaFactory) Build() *EntCarFactory {
 	return &EntCarFactory{meta: *f, counter: &Counter{}}
