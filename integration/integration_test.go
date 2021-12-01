@@ -332,7 +332,7 @@ func TestEntBasic(t *testing.T) {
 	c, err := group.QueryUsers().Count(ctx)
 	require.Nil(t, err)
 	require.Equal(t, 1, c)
-	// total group count 7, user:1 + car.owner:1 + user2:3 + group:1
+	// total group count 6, user:1 + car.owner:1 + user2:3 + group:1
 	total, err := f.Client().Group.Query().Count(ctx)
 	require.Nil(t, err)
 	require.Equal(t, 6, total)
