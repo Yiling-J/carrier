@@ -18,6 +18,6 @@ type Counter struct {
 }
 
 func (c *Counter) Get() int {
-	atomic.AddInt32(&c.count, 1)
-	return int(atomic.LoadInt32(&c.count))
+	new := atomic.AddInt32(&c.count, 1)
+	return int(new)
 }
