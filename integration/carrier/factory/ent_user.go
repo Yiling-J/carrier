@@ -25,6 +25,8 @@ type entUserMutation struct {
 	nameType int
 	nameFunc func(ctx context.Context, i *EntUserMutator, c int, creator *ent.UserCreate) error
 
+	_postGroupsFunc func(ctx context.Context, set bool, obj *ent.User, i int) error
+
 	afterCreateFunc func(ctx context.Context, i *ent.User) error
 }
 type EntUserMetaFactory struct {
@@ -356,6 +358,20 @@ func (t *entUserTrait) SetNameFactory(fn func(ctx context.Context) (string, erro
 	return t
 }
 
+func (*entUserMutation) groupsPostMutateFunc(fn func(ctx context.Context, set bool, obj *ent.User, i int) error) func(m *entUserMutation) {
+	return func(m *entUserMutation) {
+		m._postGroupsFunc = fn
+	}
+}
+func (f *EntUserMetaFactory) SetGroupsPostFunc(fn func(ctx context.Context, set bool, obj *ent.User, i int) error) *EntUserMetaFactory {
+	f.mutation.groupsPostMutateFunc(fn)(&f.mutation)
+	return f
+}
+func (t *entUserTrait) SetGroupsPostFunc(fn func(ctx context.Context, set bool, obj *ent.User, i int) error) *entUserTrait {
+	t.updates = append(t.updates, t.mutation.groupsPostMutateFunc(fn))
+	return t
+}
+
 func (f *EntUserMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.User) error) *EntUserMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
@@ -397,6 +413,15 @@ func (f *EntUserFactory) SetEmail(i string) *EntUserBuilder {
 func (f *EntUserFactory) SetName(i string) *EntUserBuilder {
 	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
+
+	builder.client = f.client
+
+	return builder
+}
+
+func (f *EntUserFactory) SetGroupsPost(i int) *EntUserBuilder {
+	builder := &EntUserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+	builder.SetGroupsPost(i)
 
 	builder.client = f.client
 
@@ -451,6 +476,9 @@ type EntUserBuilder struct {
 	nameOverride  string
 	nameOverriden bool
 
+	_postGroups    int
+	_postGroupsSet bool
+
 	client *ent.Client
 }
 
@@ -474,6 +502,12 @@ func (b *EntUserBuilder) SetEmail(i string) *EntUserBuilder {
 func (b *EntUserBuilder) SetName(i string) *EntUserBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
+	return b
+}
+
+func (b *EntUserBuilder) SetGroupsPost(i int) *EntUserBuilder {
+	b._postGroups = i
+	b._postGroupsSet = true
 	return b
 }
 
@@ -562,6 +596,13 @@ func (b *EntUserBuilder) Create(ctx context.Context) (*ent.User, error) {
 		case TypeFactory:
 			preSlice = append(preSlice, b.mutation.nameFunc)
 		}
+	}
+
+	if b.mutation._postGroupsFunc != nil {
+		postSlice = append(postSlice, func(ctx context.Context, i *ent.User, c int, creator *ent.UserCreate) error {
+			err := b.mutation._postGroupsFunc(ctx, b._postGroupsSet, i, b._postGroups)
+			return err
+		})
 	}
 
 	v := &EntUserMutator{}

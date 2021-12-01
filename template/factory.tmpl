@@ -37,6 +37,9 @@ type Factory struct {
 
     func (f *EntFactory) SetClient(c *ent.Client) {
     f.client = c
+    {{range .EntSchemas}}
+	_ = f.{{.Name | FirstLower}}Factory.Client(f.client)
+    {{end}}
     }
 
     {{range .EntSchemas}}
@@ -48,7 +51,7 @@ type Factory struct {
 	return f
 	}
 	func (f *EntFactory) {{.Name}}Factory() *factory.Ent{{.Name}}Factory {
-	return f.{{.Name | FirstLower}}Factory.Client(f.client)
+	return f.{{.Name | FirstLower}}Factory
 	}
     {{end}}
 {{end}}

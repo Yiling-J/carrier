@@ -18,7 +18,7 @@ func (Group) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").
 			// Regexp validation for group name.
-			Match(regexp.MustCompile("[a-zA-Z_]+$")),
+			Match(regexp.MustCompile("[a-zA-Z_0-9]+$")),
 	}
 }
 

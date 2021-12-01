@@ -56,6 +56,9 @@ func getStructFactory() *carrier.Factory {
 		SetNilTrait(
 			factory.UserTrait().SetNameFactory(nil).SetEmailLazy(nil).SetGroupSequence(nil).SetAfterCreateFunc(nil),
 		).
+		SetMixnameTrait(factory.UserTrait().SetNameDefault("mix_name")).
+		SetMixemailTrait(factory.UserTrait().SetEmailDefault("mix_email").SetAfterCreateFunc(nil)).
+		SetMixtitleTrait(factory.UserTrait().SetTitleDefault("mix_title")).
 		SetAfterCreateFunc(func(ctx context.Context, i *model.User) error {
 			i.Email = i.Email + ".com"
 			return nil
@@ -69,6 +72,11 @@ func getStructFactory() *carrier.Factory {
 }
 
 func getEntFactory() (*carrier.EntFactory, error) {
+	groupFactory := carrier.EntGroupMetaFactory().SetNameSequence(
+		func(ctx context.Context, i int) (string, error) {
+			return fmt.Sprintf("group%d", i), nil
+		},
+	).Build()
 	userFactory := carrier.EntUserMetaFactory().
 		SetNameSequence(
 			func(ctx context.Context, i int) (string, error) {
@@ -77,6 +85,22 @@ func getEntFactory() (*carrier.EntFactory, error) {
 		).SetAgeDefault(20).
 		SetEmailLazy(func(ctx context.Context, i *factory.EntUserMutator) (string, error) {
 			return fmt.Sprintf("%s@test.com", i.Name), nil
+		}).
+		SetGroupsPostFunc(func(ctx context.Context, set bool, obj *ent.User, i int) error {
+			if !set {
+				group, err := groupFactory.Create(ctx)
+				if err != nil {
+					return err
+				}
+				_, err = obj.Update().AddGroups(group).Save(ctx)
+				return err
+			}
+			groups, err := groupFactory.CreateBatch(ctx, i)
+			if err != nil {
+				return err
+			}
+			_, err = obj.Update().AddGroups(groups...).Save(ctx)
+			return err
 		}).
 		Build()
 	carFactory := carrier.EntCarMetaFactory().
@@ -92,7 +116,10 @@ func getEntFactory() (*carrier.EntFactory, error) {
 	if err := client.Schema.Create(context.Background()); err != nil {
 		return nil, err
 	}
-	factory.SetUserFactory(userFactory).SetCarFactory(carFactory).SetClient(client)
+	factory.SetUserFactory(userFactory).
+		SetCarFactory(carFactory).
+		SetGroupFactory(groupFactory).
+		SetClient(client)
 	return factory, nil
 }
 
@@ -234,21 +261,45 @@ func TestCreateBatchV(t *testing.T) {
 	require.Equal(t, []string{"user-1", "user-2", "user-3"}, names)
 }
 
+func TestMixTrait(t *testing.T) {
+	f := getStructFactory()
+	user, err := f.UserFactory().
+		WithMixnameTrait().
+		WithMixemailTrait().
+		WithMixtitleTrait().
+		Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "mix_name", user.Name)
+	require.Equal(t, "mix_email", user.Email)
+	require.Equal(t, "mix_title", user.Title)
+}
+
 func TestEntBasic(t *testing.T) {
+	ctx := context.TODO()
 	f, err := getEntFactory()
 	require.Nil(t, err)
-	user, err := f.UserFactory().Create(context.TODO())
+	user, err := f.UserFactory().Create(ctx)
 	require.Nil(t, err)
 	require.Equal(t, user.Name, "user-1")
 	require.Equal(t, user.ID, 1)
 	require.Equal(t, *user.Email, "user-1@test.com")
-
-	car, err := f.CarFactory().SetRegisteredAt(time.Now()).Create(context.TODO())
+	// sub factory
+	car, err := f.CarFactory().SetRegisteredAt(time.Now()).Create(ctx)
 	require.Nil(t, err)
 	require.Equal(t, "Tesla", car.Model)
 	require.Equal(t, car.ID, 1)
-	owner, err := car.QueryOwner().First(context.TODO())
+	owner, err := car.QueryOwner().First(ctx)
 	require.Nil(t, err)
 	require.Equal(t, "user-2", owner.Name)
 	require.Equal(t, owner.ID, 2)
+	// post default
+	groups, err := user.QueryGroups().All(ctx)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(groups))
+	// post set
+	user2, err := f.UserFactory().SetGroupsPost(3).Create(ctx)
+	require.Nil(t, err)
+	groups, err = user2.QueryGroups().All(ctx)
+	require.Nil(t, err)
+	require.Equal(t, 3, len(groups))
 }

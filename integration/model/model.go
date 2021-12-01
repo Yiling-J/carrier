@@ -5,7 +5,8 @@ type Group struct {
 }
 
 type User struct {
-	Name string
+	Name  string
 	Email string
+	Title string
 	Group *Group
 }
