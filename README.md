@@ -26,7 +26,7 @@ Schemas := []carrier.Schema{
 	},
 }
 ```
-- *Run generator* 🎉
+- *Generate fixtures* 🎉
 ```go
 userMetaFactory := carrier.UserMetaFactory()
 userFactory := userMetaFactory.
