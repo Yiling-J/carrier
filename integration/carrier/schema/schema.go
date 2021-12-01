@@ -15,6 +15,10 @@ var (
 			To: model.Group{},
 		},
 		&carrier.StructSchema{
+			To:    model.Foo{},
+			Alias: "Bar",
+		},
+		&carrier.StructSchema{
 			To: model.User{},
 			Traits: []string{
 				"default", "lazy", "sequence", "factory", "anonymous", "nil",

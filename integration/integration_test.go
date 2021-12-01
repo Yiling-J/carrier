@@ -67,9 +67,11 @@ func getStructFactory() *carrier.Factory {
 		})
 	_ = userMetaFactory.SetGroupFactory(groupFactory.Create)
 	userFactory := userMetaFactory.Build()
+	barFactory := carrier.BarMetaFactory().Build()
 	factory := &carrier.Factory{}
 	factory.SetGroupFactory(groupFactory)
 	factory.SetUserFactory(userFactory)
+	factory.SetBarFactory(barFactory)
 	return factory
 }
 
@@ -289,6 +291,13 @@ func TestMixTrait(t *testing.T) {
 	require.Equal(t, "mix_name", user.Name)
 	require.Equal(t, "mix_email", user.Email)
 	require.Equal(t, "mix_title", user.Title)
+}
+
+func TestAlias(t *testing.T) {
+	f := getStructFactory()
+	foo, err := f.BarFactory().SetName("foo").Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "foo", foo.Name)
 }
 
 func TestEntBasic(t *testing.T) {

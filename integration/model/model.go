@@ -15,3 +15,7 @@ type User struct {
 	Title string
 	Group *Group
 }
+
+type Foo struct {
+	Name string
+}
