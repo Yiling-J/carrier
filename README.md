@@ -173,6 +173,22 @@ factory.SetClient(entClient).SetUserFactory(userFactory)
 factory.UserFactory().Create(context.TODO())
 ```
 ## Schema Definition
+There are 2 kinds of schemas `StructSchema` and `EntSchema`,
+both of them implement `carrier.Schema` interface so you can put them in the schema slice.
+
+Each schema has 4 fields:
+- **Alias**: Optional. If you have 2 struct type from different package, but have same name, add alias for them.
+Carrier will use alias directly as factory name.
+
+- **To**: Required. For `StructSchema`, this is the struct value factory should generate. Carrier will get struct type from it and used in code generation.
+For `EntSchema`, this field should be the `{SchemaName}Create` struct which `ent` generated. Carrier will look up all `Set{Field}` methods
+and generate factory based on them.
+
+- **Traits**: Optional. String slice of trait names. Traits allow you to group attributes together and override them at once.
+
+- **Posts**: Optional. Slice of `carrier.PostField`. Each `carrier.PostField` require `Name` and `Input` value and map to a post function after code generation.
+Post function will run after struct created, with input value as param.
+
 ## MetaFactory API
 ## Factory API
 ## Common Recipes
