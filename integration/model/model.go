@@ -1,7 +1,12 @@
 package model
 
-type Group struct {
+type GroupCategory struct {
 	Name string
+}
+
+type Group struct {
+	Name     string
+	Category GroupCategory
 }
 
 type User struct {

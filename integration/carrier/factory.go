@@ -8,9 +8,23 @@ import (
 )
 
 type Factory struct {
+	groupCategoryFactory *factory.GroupCategoryFactory
+
 	groupFactory *factory.GroupFactory
 
 	userFactory *factory.UserFactory
+}
+
+func GroupCategoryMetaFactory() *factory.GroupCategoryMetaFactory {
+	return &factory.GroupCategoryMetaFactory{}
+}
+func (f *Factory) SetGroupCategoryFactory(c *factory.GroupCategoryFactory) *Factory {
+	f.groupCategoryFactory = c
+	return f
+}
+
+func (f *Factory) GroupCategoryFactory() *factory.GroupCategoryFactory {
+	return f.groupCategoryFactory
 }
 
 func GroupMetaFactory() *factory.GroupMetaFactory {

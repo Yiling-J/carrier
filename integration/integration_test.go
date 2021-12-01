@@ -16,10 +16,12 @@ import (
 )
 
 func getStructFactory() *carrier.Factory {
+	groupCatMetaFactory := carrier.GroupCategoryMetaFactory()
+	groupCatFactory := groupCatMetaFactory.SetNameDefault("cat").Build()
 	groupMetaFactory := carrier.GroupMetaFactory()
 	_ = groupMetaFactory.SetNameSequence(
 		func(ctx context.Context, i int) (string, error) { return fmt.Sprintf("group-%d", i), nil },
-	)
+	).SetCategoryFactory(groupCatFactory.CreateV)
 	groupFactory := groupMetaFactory.Build()
 	userMetaFactory := carrier.UserMetaFactory()
 	_ = userMetaFactory.SetNameSequence(
@@ -236,6 +238,7 @@ func TestTrait(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, "user-1", user.Name)
 	require.Equal(t, "group-1", user.Group.Name)
+	require.Equal(t, "cat", user.Group.Category.Name)
 
 	user, err = f.UserFactory().WithAnonymousTrait().Create(context.TODO())
 	require.Nil(t, err)

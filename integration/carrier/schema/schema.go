@@ -9,6 +9,9 @@ import (
 var (
 	Schemas = []carrier.Schema{
 		&carrier.StructSchema{
+			To: &model.GroupCategory{},
+		},
+		&carrier.StructSchema{
 			To: model.Group{},
 		},
 		&carrier.StructSchema{

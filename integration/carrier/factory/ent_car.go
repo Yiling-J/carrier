@@ -2,9 +2,9 @@
 package factory
 
 import (
-	"time"
-
 	"github.com/Yiling-J/carrier/integration/ent"
+
+	"time"
 
 	"context"
 )

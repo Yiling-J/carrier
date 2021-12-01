@@ -11,6 +11,9 @@ type groupMutation struct {
 	nameType int
 	nameFunc func(ctx context.Context, i *model.Group, c int) error
 
+	categoryType int
+	categoryFunc func(ctx context.Context, i *model.Group, c int) error
+
 	afterCreateFunc func(ctx context.Context, i *model.Group) error
 }
 type GroupMetaFactory struct {
@@ -126,6 +129,102 @@ func (t *groupTrait) SetNameFactory(fn func(ctx context.Context) (string, error)
 	return t
 }
 
+func (*groupMutation) categorySequenceMutateFunc(fn func(ctx context.Context, i int) (model.GroupCategory, error)) func(m *groupMutation) {
+	return func(m *groupMutation) {
+		m.categoryType = TypeSequence
+		m.categoryFunc = func(ctx context.Context, i *model.Group, c int) error {
+			if fn == nil {
+				return nil
+			}
+			value, err := fn(ctx, c)
+			if err != nil {
+				return err
+			}
+
+			i.Category = value
+			return nil
+		}
+	}
+}
+func (*groupMutation) categoryLazyMutateFunc(fn func(ctx context.Context, i *model.Group) (model.GroupCategory, error)) func(m *groupMutation) {
+	return func(m *groupMutation) {
+		m.categoryType = TypeLazy
+		m.categoryFunc = func(ctx context.Context, i *model.Group, c int) error {
+			if fn == nil {
+				return nil
+			}
+			value, err := fn(ctx, i)
+			if err != nil {
+				return err
+			}
+
+			i.Category = value
+			return nil
+		}
+	}
+}
+func (*groupMutation) categoryDefaultMutateFunc(v model.GroupCategory) func(m *groupMutation) {
+	return func(m *groupMutation) {
+		m.categoryType = TypeDefault
+		m.categoryFunc = func(ctx context.Context, i *model.Group, c int) error {
+
+			i.Category = v
+			return nil
+		}
+	}
+}
+func (*groupMutation) categoryFactoryMutateFunc(fn func(ctx context.Context) (model.GroupCategory, error)) func(m *groupMutation) {
+	return func(m *groupMutation) {
+		m.categoryType = TypeFactory
+		m.categoryFunc = func(ctx context.Context, i *model.Group, c int) error {
+			if fn == nil {
+				return nil
+			}
+			value, err := fn(ctx)
+			if err != nil {
+				return err
+			}
+
+			i.Category = value
+
+			return nil
+		}
+	}
+}
+
+func (f *GroupMetaFactory) SetCategorySequence(fn func(ctx context.Context, i int) (model.GroupCategory, error)) *GroupMetaFactory {
+	f.mutation.categorySequenceMutateFunc(fn)(&f.mutation)
+	return f
+}
+func (f *GroupMetaFactory) SetCategoryLazy(fn func(ctx context.Context, i *model.Group) (model.GroupCategory, error)) *GroupMetaFactory {
+	f.mutation.categoryLazyMutateFunc(fn)(&f.mutation)
+	return f
+}
+func (f *GroupMetaFactory) SetCategoryDefault(v model.GroupCategory) *GroupMetaFactory {
+	f.mutation.categoryDefaultMutateFunc(v)(&f.mutation)
+	return f
+}
+func (f *GroupMetaFactory) SetCategoryFactory(fn func(ctx context.Context) (model.GroupCategory, error)) *GroupMetaFactory {
+	f.mutation.categoryFactoryMutateFunc(fn)(&f.mutation)
+	return f
+}
+func (t *groupTrait) SetCategorySequence(fn func(ctx context.Context, i int) (model.GroupCategory, error)) *groupTrait {
+	t.updates = append(t.updates, t.mutation.categorySequenceMutateFunc(fn))
+	return t
+}
+func (t *groupTrait) SetCategoryLazy(fn func(ctx context.Context, i *model.Group) (model.GroupCategory, error)) *groupTrait {
+	t.updates = append(t.updates, t.mutation.categoryLazyMutateFunc(fn))
+	return t
+}
+func (t *groupTrait) SetCategoryDefault(v model.GroupCategory) *groupTrait {
+	t.updates = append(t.updates, t.mutation.categoryDefaultMutateFunc(v))
+	return t
+}
+func (t *groupTrait) SetCategoryFactory(fn func(ctx context.Context) (model.GroupCategory, error)) *groupTrait {
+	t.updates = append(t.updates, t.mutation.categoryFactoryMutateFunc(fn))
+	return t
+}
+
 func (f *GroupMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Group) error) *GroupMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
@@ -147,6 +246,13 @@ type GroupFactory struct {
 func (f *GroupFactory) SetName(i string) *GroupBuilder {
 	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
+
+	return builder
+}
+
+func (f *GroupFactory) SetCategory(i model.GroupCategory) *GroupBuilder {
+	builder := &GroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
+	builder.SetCategory(i)
 
 	return builder
 }
@@ -179,11 +285,20 @@ type GroupBuilder struct {
 
 	nameOverride  string
 	nameOverriden bool
+
+	categoryOverride  model.GroupCategory
+	categoryOverriden bool
 }
 
 func (b *GroupBuilder) SetName(i string) *GroupBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
+	return b
+}
+
+func (b *GroupBuilder) SetCategory(i model.GroupCategory) *GroupBuilder {
+	b.categoryOverride = i
+	b.categoryOverriden = true
 	return b
 }
 
@@ -222,6 +337,26 @@ func (b *GroupBuilder) Create(ctx context.Context) (*model.Group, error) {
 			preSlice = append(preSlice, b.mutation.nameFunc)
 		case TypeFactory:
 			preSlice = append(preSlice, b.mutation.nameFunc)
+		}
+	}
+
+	if b.categoryOverriden {
+		preSlice = append(preSlice, func(ctx context.Context, i *model.Group, c int) error {
+			value := b.categoryOverride
+
+			i.Category = value
+			return nil
+		})
+	} else {
+		switch b.mutation.categoryType {
+		case TypeDefault:
+			preSlice = append(preSlice, b.mutation.categoryFunc)
+		case TypeLazy:
+			lazySlice = append(lazySlice, b.mutation.categoryFunc)
+		case TypeSequence:
+			preSlice = append(preSlice, b.mutation.categoryFunc)
+		case TypeFactory:
+			preSlice = append(preSlice, b.mutation.categoryFunc)
 		}
 	}
 
