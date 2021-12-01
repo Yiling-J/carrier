@@ -1,9 +1,9 @@
-# carrier - A Test Fixture Generator for Go
+# carrier - A Test Fixture Replacement for Go
 ![example workflow](https://github.com/Yiling-J/carrier/actions/workflows/go.yml/badge.svg)
 ![Go Report Card](https://goreportcard.com/badge/github.com/Yiling-J/carrier?style=flat-square)
 
-- **Statically Typed** - 100% statically typed using code generation.
-- **Developer Friendly API** - explicit API with method chaining support. 
+- **Statically Typed** - 100% statically typed using code generation
+- **Developer Friendly API** - explicit API with method chaining support
 - **Feature Rich** - Default/Sequence/SubFactory/PostHook/Trait
 - **Ent Support** - [ent: An Entity Framework For Go](https://github.com/ent/ent)
 
@@ -26,7 +26,7 @@ Schemas := []carrier.Schema{
 	},
 }
 ```
-- *Generate fixtures* 🎉
+- *Generate Structs* 🎉
 ```go
 userMetaFactory := carrier.UserMetaFactory()
 userFactory := userMetaFactory.
@@ -125,7 +125,7 @@ Also all ent files and meta factories will have `ent` prefix to avoid name confl
 
 If you update schemas, just run `generate` again.
 
-## Build Factory and Generate Fixtures
+## Build Factory and Generate Structs
 To construct a real factory for testing:
 
 **Create MetaFactory struct**
@@ -136,9 +136,11 @@ userMetaFactory := carrier.UserMetaFactory()
 ```go
 userFactory := userMetaFactory.SetNameDefault("carrier").Build()
 ```
-MetaFactory provide several methods to help you initial field values automatically, [MetaFactory API Reference](#metafactory-api)
+MetaFactory provide several methods to help you initial field values automatically.
 
-**Create fixtures**
+[MetaFactory API Reference](#metafactory-api)
+
+**Create structs**
 
 **> struct**
 ```go
@@ -190,17 +192,17 @@ and generate factory based on them. Both struct and pointer of struct are OK.
 Post function will run after struct created, with input value as param.
 
 ## MetaFactory API
-MetaFactory API can be categorized into 7 types:
-- Each field in your `To` struct has 4 types:
+MetaFactory API can be categorized into 7 types of method:
+- Each field in `To` struct has 4 types:
 	- **Default**: `Set{Field}Default`
 	- **Sequence**: `Set{Field}Sequence`
 	- **Lazy**: `Set{Field}Lazy`
 	- **Factory**: `Set{Field}Factory`
 
-- Each field in your `[]Posts` has 1 type:
+- Each field in `[]Posts` has 1 type:
 	- **Post**: `Set{PostField}PostFunc`
 
-- Each name in your `[]Traits` has 1 type:
+- Each name in `[]Traits` has 1 type:
 	- **Trait**: `Set{TraitName}Trait`
 
 - Each `MetaFactory` has 1 type:
@@ -212,7 +214,43 @@ Trait -> Default/Sequence/Factory -> Lazy -> Create -> AfterCreate -> Post
 ```
 `Create` only exists in ent factory, will call ent builder `Save` method.
 
-Put Trait first because Trait can override other types.
+Put `Trait` first because `Trait` can override other types.
+
+#### Default
+Set a fixed default value for field.
+```go
+userMetaFactory.SetNameDefault("carrier")
+```
+
+#### Sequence
+If a field should be unique, and thus different for all built structs, use a sequence.
+Sequence counter is shared by all field in a factory, not a single field.
+```go
+// i is the current sequence counter
+userMetaFactory.SetNameSequence(
+	func(ctx context.Context, i int) (string, error) {
+		return fmt.Sprintf("user_%d", i), nil
+	},
+),
+```
+The sequence counter is concurrent safe and increase by 1 each time factory's `Create` method called.
+
+#### Lazy
+For fields whose value is computed from other fields, use lazy attribute. Only Default/Sequence/Factory values are accessible in the struct.
+```go
+userMetaFactory.SetEmailLazy(
+	func(ctx context.Context, i *model.User) (string, error) {
+		return fmt.Sprintf("%s@carrier.go", i.Name), nil
+	},
+)
+```
+
+#### Factory
+If a field's value has related factory, use `relatedFactory.Create` method as param here. You can also set the function manually.
+```go
+// User struct has a Group field, type is Group
+userMetaFactory.SetGroupFactory(groupFactory.Create)
+```
 
 ## Factory API
 ## Common Recipes
