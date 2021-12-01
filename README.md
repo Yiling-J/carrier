@@ -180,16 +180,40 @@ Each schema has 4 fields:
 - **Alias**: Optional. If you have 2 struct type from different package, but have same name, add alias for them.
 Carrier will use alias directly as factory name.
 
-- **To**: Required. For `StructSchema`, this is the struct value factory should generate. Carrier will get struct type from it and used in code generation.
+- **To**: Required. For `StructSchema`, this is the struct factory should generate. Carrier will get struct type from it and used in code generation, Only public fields are concerned.
 For `EntSchema`, this field should be the `{SchemaName}Create` struct which `ent` generated. Carrier will look up all `Set{Field}` methods
-and generate factory based on them.
+and generate factory based on them. Both struct and pointer of struct are OK.
 
 - **Traits**: Optional. String slice of trait names. Traits allow you to group attributes together and override them at once.
 
-- **Posts**: Optional. Slice of `carrier.PostField`. Each `carrier.PostField` require `Name` and `Input` value and map to a post function after code generation.
+- **Posts**: Optional. Slice of `carrier.PostField`. Each `carrier.PostField` require `Name`(string) and `Input`(any interface{}), and map to a post function after code generation.
 Post function will run after struct created, with input value as param.
 
 ## MetaFactory API
+MetaFactory API can be categorized into 7 types:
+- Each field in your `To` struct has 4 types:
+	- **Default**: `Set{Field}Default`
+	- **Sequence**: `Set{Field}Sequence`
+	- **Lazy**: `Set{Field}Lazy`
+	- **Factory**: `Set{Field}Factory`
+
+- Each field in your `[]Posts` has 1 type:
+	- **Post**: `Set{PostField}PostFunc`
+
+- Each name in your `[]Traits` has 1 type:
+	- **Trait**: `Set{TraitName}Trait`
+
+- Each `MetaFactory` has 1 type:
+	- **AfterCreate**: `SetAfterCreateFunc`
+
+The evaluation order of these methods are:
+```
+Trait -> Default/Sequence/Factory -> Lazy -> Create -> AfterCreate -> Post
+```
+`Create` only exists in ent factory, will call ent builder `Save` method.
+
+Put Trait first because Trait will override other types.
+
 ## Factory API
 ## Common Recipes
 
