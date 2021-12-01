@@ -3,7 +3,7 @@
 ![Go Report Card](https://goreportcard.com/badge/github.com/Yiling-J/carrier?style=flat-square)
 
 - **Statically Typed** - 100% statically typed using code generation.
-- **Developer Friendly API** - factory_bot/factory_boy style API
+- **Developer Friendly API** - explicit API with method chaining support. 
 - **Feature Rich** - Default/Sequence/SubFactory/PostHook/Trait
 - **Ent Support** - [ent: An Entity Framework For Go](https://github.com/ent/ent)
 
@@ -212,7 +212,7 @@ Trait -> Default/Sequence/Factory -> Lazy -> Create -> AfterCreate -> Post
 ```
 `Create` only exists in ent factory, will call ent builder `Save` method.
 
-Put Trait first because Trait will override other types.
+Put Trait first because Trait can override other types.
 
 ## Factory API
 ## Common Recipes
