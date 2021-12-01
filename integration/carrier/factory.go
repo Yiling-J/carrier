@@ -58,6 +58,10 @@ func (f *EntFactory) SetClient(c *ent.Client) {
 
 }
 
+func (f *EntFactory) Client() *ent.Client {
+	return f.client
+}
+
 func EntUserMetaFactory() *factory.EntUserMetaFactory {
 	return &factory.EntUserMetaFactory{}
 }

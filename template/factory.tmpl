@@ -42,6 +42,10 @@ type Factory struct {
     {{end}}
     }
 
+    func (f *EntFactory) Client() *ent.Client {
+    return f.client
+    }
+
     {{range .EntSchemas}}
 	func Ent{{.Name}}MetaFactory() *factory.Ent{{.Name}}MetaFactory {
 	return &factory.Ent{{.Name}}MetaFactory{}

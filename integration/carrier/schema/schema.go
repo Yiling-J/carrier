@@ -27,7 +27,8 @@ var (
 			To: &ent.CarCreate{},
 		},
 		&carrier.EntSchema{
-			To: &ent.GroupCreate{},
+			To:     &ent.GroupCreate{},
+			Traits: []string{"nouser"},
 		},
 	}
 )

@@ -72,11 +72,22 @@ func getStructFactory() *carrier.Factory {
 }
 
 func getEntFactory() (*carrier.EntFactory, error) {
+	entFactory := &carrier.EntFactory{}
 	groupFactory := carrier.EntGroupMetaFactory().SetNameSequence(
 		func(ctx context.Context, i int) (string, error) {
 			return fmt.Sprintf("group%d", i), nil
 		},
-	).Build()
+	).
+		SetAfterCreateFunc(func(ctx context.Context, i *ent.Group) error {
+			user, err := entFactory.UserFactory().SetGroupsPost(0).Create(ctx)
+			if err != nil {
+				return err
+			}
+			_, err = i.Update().AddUsers(user).Save(ctx)
+			return err
+		}).
+		SetNouserTrait(factory.EntGroupTrait().SetAfterCreateFunc(nil)).
+		Build()
 	userFactory := carrier.EntUserMetaFactory().
 		SetNameSequence(
 			func(ctx context.Context, i int) (string, error) {
@@ -88,27 +99,30 @@ func getEntFactory() (*carrier.EntFactory, error) {
 		}).
 		SetGroupsPostFunc(func(ctx context.Context, set bool, obj *ent.User, i int) error {
 			if !set {
-				group, err := groupFactory.Create(ctx)
+				group, err := groupFactory.WithNouserTrait().Create(ctx)
 				if err != nil {
 					return err
 				}
 				_, err = obj.Update().AddGroups(group).Save(ctx)
 				return err
 			}
-			groups, err := groupFactory.CreateBatch(ctx, i)
+			if i == 0 {
+				return nil
+			}
+			groups, err := groupFactory.WithNouserTrait().CreateBatch(ctx, i)
 			if err != nil {
 				return err
 			}
 			_, err = obj.Update().AddGroups(groups...).Save(ctx)
 			return err
 		}).
+		SetAfterCreateFunc(nil).
 		Build()
 	carFactory := carrier.EntCarMetaFactory().
 		SetModelDefault("Tesla").
 		SetOwnerFactory(userFactory.Create).
 		Build()
 
-	factory := &carrier.EntFactory{}
 	client, err := ent.Open("sqlite3", ":memory:?_fk=1")
 	if err != nil {
 		return nil, err
@@ -116,11 +130,11 @@ func getEntFactory() (*carrier.EntFactory, error) {
 	if err := client.Schema.Create(context.Background()); err != nil {
 		return nil, err
 	}
-	factory.SetUserFactory(userFactory).
+	entFactory.SetUserFactory(userFactory).
 		SetCarFactory(carFactory).
 		SetGroupFactory(groupFactory).
 		SetClient(client)
-	return factory, nil
+	return entFactory, nil
 }
 
 func TestBasicWithTraits(t *testing.T) {
@@ -296,10 +310,30 @@ func TestEntBasic(t *testing.T) {
 	groups, err := user.QueryGroups().All(ctx)
 	require.Nil(t, err)
 	require.Equal(t, 1, len(groups))
+	for _, g := range groups {
+		c, err := g.QueryUsers().Count(ctx)
+		require.Nil(t, err)
+		require.Equal(t, 1, c)
+	}
 	// post set
 	user2, err := f.UserFactory().SetGroupsPost(3).Create(ctx)
 	require.Nil(t, err)
 	groups, err = user2.QueryGroups().All(ctx)
 	require.Nil(t, err)
 	require.Equal(t, 3, len(groups))
+	for _, g := range groups {
+		c, err := g.QueryUsers().Count(ctx)
+		require.Nil(t, err)
+		require.Equal(t, 1, c)
+	}
+	// group default user
+	group, err := f.GroupFactory().Create(ctx)
+	require.Nil(t, err)
+	c, err := group.QueryUsers().Count(ctx)
+	require.Nil(t, err)
+	require.Equal(t, 1, c)
+	// total group count 7, user:1 + car.owner:1 + user2:3 + group:1
+	total, err := f.Client().Group.Query().Count(ctx)
+	require.Nil(t, err)
+	require.Equal(t, 6, total)
 }

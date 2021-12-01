@@ -19,6 +19,8 @@ type entGroupMutation struct {
 }
 type EntGroupMetaFactory struct {
 	mutation entGroupMutation
+
+	nouserTrait *entGroupTrait
 }
 type entGroupTrait struct {
 	mutation entGroupMutation
@@ -138,6 +140,11 @@ func (t *entGroupTrait) SetNameFactory(fn func(ctx context.Context) (string, err
 	return t
 }
 
+func (f *EntGroupMetaFactory) SetNouserTrait(t *entGroupTrait) *EntGroupMetaFactory {
+	f.nouserTrait = t
+	return f
+}
+
 func (f *EntGroupMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Group) error) *EntGroupMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
@@ -164,6 +171,21 @@ func (f *EntGroupFactory) SetName(i string) *EntGroupBuilder {
 
 	builder.client = f.client
 
+	return builder
+}
+
+func (f *EntGroupFactory) WithNouserTrait() *EntGroupBuilder {
+	builder := &EntGroupBuilder{mutation: f.meta.mutation, counter: f.counter}
+	builder.factory = f
+
+	builder.client = f.client
+
+	if f.meta.nouserTrait == nil {
+		return builder
+	}
+	for _, u := range f.meta.nouserTrait.updates {
+		u(&builder.mutation)
+	}
 	return builder
 }
 
@@ -220,6 +242,16 @@ func (b *EntGroupBuilder) Client(c *ent.Client) *EntGroupBuilder {
 func (b *EntGroupBuilder) SetName(i string) *EntGroupBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
+	return b
+}
+
+func (b *EntGroupBuilder) WithNouserTrait() *EntGroupBuilder {
+	if b.factory.meta.nouserTrait == nil {
+		return b
+	}
+	for _, u := range b.factory.meta.nouserTrait.updates {
+		u(&b.mutation)
+	}
 	return b
 }
 
