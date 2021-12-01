@@ -70,7 +70,7 @@ import (
 var (
 	Schemas = []carrier.Schema{
 		{
-			To: model.User{},,
+			To: model.User{},
 		},
 	}
 )
