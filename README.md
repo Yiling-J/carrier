@@ -1,4 +1,6 @@
 # carrier - A Test Fixture Generator for Go
+![example workflow](https://github.com/Yiling-J/carrier/actions/workflows/go.yml/badge.svg)
+![Go Report Card](https://goreportcard.com/badge/github.com/Yiling-J/carrier?style=flat-square)
 
 - **Statically Typed** - 100% statically typed using code generation.
 - **Developer Friendly API** - factory_bot/factory_boy style API.
