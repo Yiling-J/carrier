@@ -224,7 +224,7 @@ userMetaFactory.SetNameDefault("carrier")
 
 #### Sequence
 If a field should be unique, and thus different for all built structs, use a sequence.
-Sequence counter is shared by all field in a factory, not a single field.
+Sequence counter is shared by all fields in a factory, not a single field.
 ```go
 // i is the current sequence counter
 userMetaFactory.SetNameSequence(
@@ -250,6 +250,51 @@ If a field's value has related factory, use `relatedFactory.Create` method as pa
 ```go
 // User struct has a Group field, type is Group
 userMetaFactory.SetGroupFactory(groupFactory.Create)
+```
+
+#### AfterCreate
+For struct factory, after create function is called after all lazy functions done. For ent factory, after create function is called next to ent's `Save` method.
+```go
+userMetaFactory.SetAfterCreateFunc(func(ctx context.Context, i *model.User) error {
+	fmt.Printf("user: %d saved", i.Name)
+	return nil
+})
+```
+
+#### Post
+Post functions will run once `AfterCreate` step done.
+```go
+// user MetaFactory
+userMetaFactory.SetWelcomePostFunc(
+	func(ctx context.Context, set bool, obj *model.User, i string) error {
+		if set {
+			message.SendTo(obj, i)
+		}
+		return nil
+	},
+)
+// user Factory, send welcome message
+userFactory.SetWelcomePost("welcome to carrier").Create(context.TODO())
+// user Factory, no welcome message
+userFactory.Create(context.TODO())
+```
+
+#### Trait
+Trait is used to override some fields at once, activated by `With{Name}Trait` method.
+```go
+// override name
+userMetaFactory.SetGopherTrait(factory.UserTrait().SetNameDefault("gopher"))
+// user Factory
+userFactory.WithGopherTrait().Create(context.TODO())
+```
+The `Trait` struct share same API with `MetaFactory` except `Set{Name}Trait` one, that means you can override 6 types within a trait.
+`Trait` only override methods you explicitly set, the exampe above will only override name field. So you can combine multiple traits together,
+each change some parts of the struct. If multiple traits override same field, the last one will win:
+```go
+userMetaFactory.SetGopherTrait(factory.UserTrait().SetNameDefault("gopher")).
+SetFooTrait(factory.UserTrait().SetNameDefault("foo"))
+// user name is foo
+userFactory.WithGopherTrait().WithFooTrait().Create(context.TODO())
 ```
 
 ## Factory API
