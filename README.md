@@ -265,7 +265,8 @@ If a field's value has related factory, use `relatedFactory.Create` method as pa
 userMetaFactory.SetGroupFactory(groupFactory.Create)
 ```
 
-** > ent**
+**> ent**
+
 Make sure related factory's ent client is set. By using factory wrapper or set it explicitly.
 
 #### AfterCreate
