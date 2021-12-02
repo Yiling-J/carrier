@@ -37,7 +37,7 @@ userFactory := userMetaFactory.
 	SetGroupFactory(groupFactory.Create).
 	Build()
 user, err := userFactory.Create(ctx)
-users, err := userFactory.CreateBatch(5, ctx)
+users, err := userFactory.CreateBatch(ctx, 5)
 ```
 
 ## Installation
@@ -78,7 +78,7 @@ var (
 
 **> ent**
 
-To support ent, you need to provide the `SchemaCreate` struct to schema, so carrier can get enough information.
+To support ent, you need to provide the `ent.{Name}Create` struct to schema, so carrier can get enough information.
 ```go
 package schema
 
@@ -311,6 +311,8 @@ userMetaFactory.SetGopherTrait(factory.UserTrait().SetNameDefault("gopher")).
 SetFooTrait(factory.UserTrait().SetNameDefault("foo"))
 // user name is foo
 userFactory.WithGopherTrait().WithFooTrait().Create(context.TODO())
+// user name is gopher
+userFactory.WithFooTrait().WithGopherTrait().Create(context.TODO())
 ```
 #### Build
 This is the final step for `MetaFactory` definition, call this method will return a `Factory` which you can use to create structs.
