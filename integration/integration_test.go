@@ -69,7 +69,7 @@ func getStructFactory() *carrier.Factory {
 	userFactory := userMetaFactory.Build()
 	barFactory := carrier.BarMetaFactory().SetNameDefault("foo").Build()
 	foodFactory := carrier.FoodMetaFactory().SetFooFactory(barFactory.CreateV).Build()
-	factory := &carrier.Factory{}
+	factory := carrier.NewFactory()
 	factory.SetGroupFactory(groupFactory)
 	factory.SetUserFactory(userFactory)
 	factory.SetBarFactory(barFactory)
@@ -78,7 +78,14 @@ func getStructFactory() *carrier.Factory {
 }
 
 func getEntFactory() (*carrier.EntFactory, error) {
-	entFactory := &carrier.EntFactory{}
+	client, err := ent.Open("sqlite3", ":memory:?_fk=1")
+	if err != nil {
+		return nil, err
+	}
+	if err := client.Schema.Create(context.Background()); err != nil {
+		return nil, err
+	}
+	entFactory := carrier.NewEntFactory(client)
 	groupFactory := carrier.EntGroupMetaFactory().SetNameSequence(
 		func(ctx context.Context, i int) (string, error) {
 			return fmt.Sprintf("group%d", i), nil
@@ -128,18 +135,9 @@ func getEntFactory() (*carrier.EntFactory, error) {
 		SetModelDefault("Tesla").
 		SetOwnerFactory(userFactory.Create).
 		Build()
-
-	client, err := ent.Open("sqlite3", ":memory:?_fk=1")
-	if err != nil {
-		return nil, err
-	}
-	if err := client.Schema.Create(context.Background()); err != nil {
-		return nil, err
-	}
 	entFactory.SetUserFactory(userFactory).
 		SetCarFactory(carFactory).
-		SetGroupFactory(groupFactory).
-		SetClient(client)
+		SetGroupFactory(groupFactory)
 	return entFactory, nil
 }
 

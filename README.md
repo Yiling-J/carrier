@@ -161,17 +161,15 @@ Carrier also include a wrapper where you can put all your factories in:
 
 **> struct**
 ```go
-factory := &carrier.Factory{}
+factory := carrier.NewFactory()
 factory.SetUserFactory(userFactory)
 factory.UserFactory().Create(context.TODO())
 ```
 **> ent**
 ```go
-factory := &carrier.EntFactory{}
-factory.SetClient(entClient).SetUserFactory(userFactory)
-
-// no .Client(entClient) for userFactory
-// because we already set that in wrapper factory and userFactory will inherit it
+factory := carrier.NewEntFactory(client)
+// this step will assign factory client to userFactory also
+factory.SetUserFactory(userFactory)
 factory.UserFactory().Create(context.TODO())
 // access ent client
 client := factory.Client()
@@ -266,6 +264,9 @@ If a field's value has related factory, use `relatedFactory.Create` method as pa
 // User struct has a Group field, type is Group
 userMetaFactory.SetGroupFactory(groupFactory.Create)
 ```
+
+** > ent**
+Make sure related factory's ent client is set. By using factory wrapper or set it explicitly.
 
 #### AfterCreate
 For struct factory, after create function is called after all lazy functions done. For ent factory, after create function is called next to ent's `Save` method.

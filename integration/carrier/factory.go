@@ -19,6 +19,10 @@ type Factory struct {
 	userFactory *factory.UserFactory
 }
 
+func NewFactory() *Factory {
+	return &Factory{}
+}
+
 func GroupCategoryMetaFactory() *factory.GroupCategoryMetaFactory {
 	return &factory.GroupCategoryMetaFactory{}
 }
@@ -79,6 +83,10 @@ func (f *Factory) UserFactory() *factory.UserFactory {
 	return f.userFactory
 }
 
+func NewEntFactory(client *ent.Client) *EntFactory {
+	return &EntFactory{client: client}
+}
+
 type EntFactory struct {
 	userFactory *factory.EntUserFactory
 
@@ -89,17 +97,6 @@ type EntFactory struct {
 	client *ent.Client
 }
 
-func (f *EntFactory) SetClient(c *ent.Client) {
-	f.client = c
-
-	_ = f.userFactory.Client(f.client)
-
-	_ = f.carFactory.Client(f.client)
-
-	_ = f.groupFactory.Client(f.client)
-
-}
-
 func (f *EntFactory) Client() *ent.Client {
 	return f.client
 }
@@ -108,7 +105,7 @@ func EntUserMetaFactory() *factory.EntUserMetaFactory {
 	return &factory.EntUserMetaFactory{}
 }
 func (f *EntFactory) SetUserFactory(c *factory.EntUserFactory) *EntFactory {
-	f.userFactory = c
+	f.userFactory = c.Client(f.client)
 	return f
 }
 func (f *EntFactory) UserFactory() *factory.EntUserFactory {
@@ -119,7 +116,7 @@ func EntCarMetaFactory() *factory.EntCarMetaFactory {
 	return &factory.EntCarMetaFactory{}
 }
 func (f *EntFactory) SetCarFactory(c *factory.EntCarFactory) *EntFactory {
-	f.carFactory = c
+	f.carFactory = c.Client(f.client)
 	return f
 }
 func (f *EntFactory) CarFactory() *factory.EntCarFactory {
@@ -130,7 +127,7 @@ func EntGroupMetaFactory() *factory.EntGroupMetaFactory {
 	return &factory.EntGroupMetaFactory{}
 }
 func (f *EntFactory) SetGroupFactory(c *factory.EntGroupFactory) *EntFactory {
-	f.groupFactory = c
+	f.groupFactory = c.Client(f.client)
 	return f
 }
 func (f *EntFactory) GroupFactory() *factory.EntGroupFactory {
