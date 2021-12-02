@@ -37,7 +37,7 @@ userFactory := userMetaFactory.
 	SetGroupFactory(groupFactory.Create).
 	Build()
 user, err := userFactory.Create(ctx)
-users, err := userFactory.CreateBatch(5, ctx)
+users, err := userFactory.CreateBatch(ctx, 5)
 ```
 
 ## Installation
