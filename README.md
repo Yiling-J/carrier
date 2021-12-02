@@ -78,7 +78,7 @@ var (
 
 **> ent**
 
-To support ent, you need to provide the `SchemaCreate` struct to schema, so carrier can get enough information.
+To support ent, you need to provide the `ent.{Name}Create` struct to schema, so carrier can get enough information.
 ```go
 package schema
 
