@@ -216,6 +216,8 @@ Trait -> Default/Sequence/Factory -> Lazy -> Create -> AfterCreate -> Post
 
 Put `Trait` first because `Trait` can override other types.
 
+All methods except `Default` and `Trait` use function as input and it's fine to set it to `nil`. This is very useful in `Trait` override.
+
 #### Default
 Set a fixed default value for field.
 ```go
@@ -241,6 +243,17 @@ For fields whose value is computed from other fields, use lazy attribute. Only D
 userMetaFactory.SetEmailLazy(
 	func(ctx context.Context, i *model.User) (string, error) {
 		return fmt.Sprintf("%s@carrier.go", i.Name), nil
+	},
+)
+```
+**> ent**
+
+Ent is a little different because the struct is created after `Save`. And carrier call ent's `Set{Field}` method to set values.
+So the input param here is not `*model.User`, but a temp containter struct created by carrier, hold all fields you can set.
+```go
+entUserMetaFactory.SetEmailLazy(
+	func(ctx context.Context, i *factory.EntUserMutator) (string, error) {
+		return fmt.Sprintf("%s@carrier.com", i.Name), nil
 	},
 )
 ```
@@ -287,7 +300,7 @@ userMetaFactory.SetGopherTrait(factory.UserTrait().SetNameDefault("gopher"))
 // user Factory
 userFactory.WithGopherTrait().Create(context.TODO())
 ```
-The `Trait` struct share same API with `MetaFactory` except `Set{Name}Trait` one, that means you can override 6 types within a trait.
+The `Trait` struct share same API with `MetaFactory` except `Set{Name}Trait` one, that means you can override 6 methods within a trait.
 `Trait` only override methods you explicitly set, the exampe above will only override name field. So you can combine multiple traits together,
 each change some parts of the struct. If multiple traits override same field, the last one will win:
 ```go
@@ -296,7 +309,35 @@ SetFooTrait(factory.UserTrait().SetNameDefault("foo"))
 // user name is foo
 userFactory.WithGopherTrait().WithFooTrait().Create(context.TODO())
 ```
+#### Build
+This is the final step for `MetaFactory` definition, call this method will return a `Factory` which you can use to create structs.
 
 ## Factory API
+Factory API provide 3 types of method, `Set{Field}` to override some field, `Set{Field}Post` to call post function and `With{Name}Trait` to enable trait.
+#### Set
+Override field value. This method has the highest priority and will override your field method in `MetaFactory`.
+```go
+userFactory.SetName("foo").Create(context.TODO())
+```
+#### SetPost
+Call post function defined in `MetaFactory` with param.
+```go
+// create a user with 3 friends
+userFactory.SetFriendsPost(3).Create(context.TODO())
+```
+#### WithTrait
+Enable a named trait. If you enable multi traits, and traits have overlapping, the latter one will override the former.
+```go
+userFactory.WithFooTrait().WithBarTrait().Create(context.TODO())
+```
+#### Create
+Create pointer of struct.
+#### CreateV
+Create struct.
+#### CreateBatch
+Create slice of struct pointer.
+#### CreateBatchV
+Create slice of struct.
+
 ## Common Recipes
 
