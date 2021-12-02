@@ -1,4 +1,4 @@
-# carrier - A Test Fixture Replacement for Go
+# carrier - A Test Fixtures Replacement for Go
 ![example workflow](https://github.com/Yiling-J/carrier/actions/workflows/go.yml/badge.svg)
 ![Go Report Card](https://goreportcard.com/badge/github.com/Yiling-J/carrier?style=flat-square)
 
