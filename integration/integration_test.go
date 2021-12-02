@@ -270,6 +270,21 @@ func TestCreateBatch(t *testing.T) {
 	require.Equal(t, []string{"user-1", "user-2", "user-3"}, names)
 }
 
+func TestCreateEntBatch(t *testing.T) {
+	f, err := getEntFactory()
+	require.Nil(t, err)
+	users, err := f.UserFactory().CreateBatch(context.TODO(), 5)
+	require.Nil(t, err)
+	require.Equal(t, 5, len(users))
+	var names []string
+	users, err = f.Client().User.Query().Order(ent.Asc("id")).All(context.TODO())
+	require.Nil(t, err)
+	for _, user := range users {
+		names = append(names, user.Name)
+	}
+	require.Equal(t, []string{"user-1", "user-2", "user-3", "user-4", "user-5"}, names)
+}
+
 func TestCreateBatchV(t *testing.T) {
 	f := getStructFactory()
 	users, err := f.UserFactory().CreateBatchV(context.TODO(), 3)
