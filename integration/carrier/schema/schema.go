@@ -19,6 +19,9 @@ var (
 			Alias: "Bar",
 		},
 		&carrier.StructSchema{
+			To: model.Food{},
+		},
+		&carrier.StructSchema{
 			To: model.User{},
 			Traits: []string{
 				"default", "lazy", "sequence", "factory", "anonymous", "nil",

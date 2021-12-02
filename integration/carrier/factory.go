@@ -14,6 +14,8 @@ type Factory struct {
 
 	barFactory *factory.BarFactory
 
+	foodFactory *factory.FoodFactory
+
 	userFactory *factory.UserFactory
 }
 
@@ -51,6 +53,18 @@ func (f *Factory) SetBarFactory(c *factory.BarFactory) *Factory {
 
 func (f *Factory) BarFactory() *factory.BarFactory {
 	return f.barFactory
+}
+
+func FoodMetaFactory() *factory.FoodMetaFactory {
+	return &factory.FoodMetaFactory{}
+}
+func (f *Factory) SetFoodFactory(c *factory.FoodFactory) *Factory {
+	f.foodFactory = c
+	return f
+}
+
+func (f *Factory) FoodFactory() *factory.FoodFactory {
+	return f.foodFactory
 }
 
 func UserMetaFactory() *factory.UserMetaFactory {

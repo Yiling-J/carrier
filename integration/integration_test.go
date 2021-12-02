@@ -67,11 +67,13 @@ func getStructFactory() *carrier.Factory {
 		})
 	_ = userMetaFactory.SetGroupFactory(groupFactory.Create)
 	userFactory := userMetaFactory.Build()
-	barFactory := carrier.BarMetaFactory().Build()
+	barFactory := carrier.BarMetaFactory().SetNameDefault("foo").Build()
+	foodFactory := carrier.FoodMetaFactory().SetFooFactory(barFactory.CreateV).Build()
 	factory := &carrier.Factory{}
 	factory.SetGroupFactory(groupFactory)
 	factory.SetUserFactory(userFactory)
 	factory.SetBarFactory(barFactory)
+	factory.SetFoodFactory(foodFactory)
 	return factory
 }
 
@@ -298,6 +300,13 @@ func TestAlias(t *testing.T) {
 	foo, err := f.BarFactory().SetName("foo").Create(context.TODO())
 	require.Nil(t, err)
 	require.Equal(t, "foo", foo.Name)
+}
+
+func TestEmbed(t *testing.T) {
+	f := getStructFactory()
+	food, err := f.FoodFactory().SetCategory("apple").Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "foo", food.Name)
 }
 
 func TestEntBasic(t *testing.T) {

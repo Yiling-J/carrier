@@ -19,3 +19,8 @@ type User struct {
 type Foo struct {
 	Name string
 }
+
+type Food struct {
+	Foo
+	Category string
+}

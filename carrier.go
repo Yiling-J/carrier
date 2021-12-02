@@ -132,17 +132,9 @@ func (s *StructSchema) Fields() []Field {
 	var fields []Field
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		if field.Anonymous {
-			continue
-		}
 		if field.PkgPath != "" {
 			continue
 		}
-
-		if field.Name == "Posts" {
-			continue
-		}
-
 		f := Field{
 			Name:      field.Name,
 			ValueType: field.Type.String(),
