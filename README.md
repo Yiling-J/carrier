@@ -310,6 +310,8 @@ userMetaFactory.SetGopherTrait(factory.UserTrait().SetNameDefault("gopher")).
 SetFooTrait(factory.UserTrait().SetNameDefault("foo"))
 // user name is foo
 userFactory.WithGopherTrait().WithFooTrait().Create(context.TODO())
+// user name is gopher
+userFactory.WithFooTrait().WithGopherTrait().Create(context.TODO())
 ```
 #### Build
 This is the final step for `MetaFactory` definition, call this method will return a `Factory` which you can use to create structs.
