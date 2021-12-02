@@ -349,3 +349,17 @@ func TestEntBasic(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, 6, total)
 }
+
+func TestEntClient(t *testing.T) {
+	carFactory := carrier.EntCarMetaFactory().
+		SetModelDefault("Tesla").
+		Build()
+
+	client, err := ent.Open("sqlite3", ":memory:?_fk=1")
+	require.Nil(t, err)
+	err = client.Schema.Create(context.Background())
+	require.Nil(t, err)
+	car, err := carFactory.Client(client).SetRegisteredAt(time.Now()).Create(context.TODO())
+	require.Nil(t, err)
+	require.Equal(t, "Tesla", car.Model)
+}

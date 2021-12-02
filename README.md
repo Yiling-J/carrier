@@ -173,6 +173,8 @@ factory.SetClient(entClient).SetUserFactory(userFactory)
 // no .Client(entClient) for userFactory
 // because we already set that in wrapper factory and userFactory will inherit it
 factory.UserFactory().Create(context.TODO())
+// access ent client
+client := factory.Client()
 ```
 ## Schema Definition
 There are 2 kinds of schemas `StructSchema` and `EntSchema`,
