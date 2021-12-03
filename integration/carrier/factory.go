@@ -83,10 +83,6 @@ func (f *Factory) UserFactory() *factory.UserFactory {
 	return f.userFactory
 }
 
-func NewEntFactory(client *ent.Client) *EntFactory {
-	return &EntFactory{client: client}
-}
-
 type EntFactory struct {
 	userFactory *factory.EntUserFactory
 
@@ -95,6 +91,10 @@ type EntFactory struct {
 	groupFactory *factory.EntGroupFactory
 
 	client *ent.Client
+}
+
+func NewEntFactory(client *ent.Client) *EntFactory {
+	return &EntFactory{client: client}
 }
 
 func (f *EntFactory) Client() *ent.Client {
