@@ -347,5 +347,5 @@ Create slice of struct.
 
 ## Common Recipes
 - [Recipe Example](examples/recipe/main.go)
-- (WIP)Ent Recipe Example
+- [Ent Recipe Example](examples/ent_recipe/main.go)
 

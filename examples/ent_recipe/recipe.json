@@ -1,0 +1,228 @@
+{
+  "id": 1,
+  "name": "recipe_1",
+  "servings": 3,
+  "edges": {
+    "author": {
+      "id": 1,
+      "name": "user_1",
+      "edges": {}
+    },
+    "tags": [
+      {
+        "id": 1,
+        "name": "vegan",
+        "edges": {}
+      }
+    ],
+    "steps": [
+      {
+        "id": 1,
+        "text": "step_1",
+        "edges": {}
+      },
+      {
+        "id": 2,
+        "text": "step_2",
+        "edges": {}
+      },
+      {
+        "id": 3,
+        "text": "step_3",
+        "edges": {}
+      },
+      {
+        "id": 4,
+        "text": "step_4",
+        "edges": {}
+      },
+      {
+        "id": 5,
+        "text": "step_5",
+        "edges": {}
+      }
+    ],
+    "recipe_ingredients": [
+      {
+        "id": 1,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 1,
+            "name": "ingredient_1",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 2,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 2,
+            "name": "ingredient_2",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 3,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 3,
+            "name": "ingredient_3",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 4,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 4,
+            "name": "ingredient_4",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 5,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 5,
+            "name": "ingredient_5",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 6,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 6,
+            "name": "ingredient_6",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 7,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 7,
+            "name": "ingredient_7",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 8,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 8,
+            "name": "ingredient_8",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 9,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 9,
+            "name": "ingredient_9",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 10,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 10,
+            "name": "ingredient_10",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 11,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 11,
+            "name": "ingredient_11",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 12,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 12,
+            "name": "ingredient_12",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 13,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 13,
+            "name": "ingredient_13",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 14,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 14,
+            "name": "ingredient_14",
+            "edges": {}
+          }
+        }
+      },
+      {
+        "id": 15,
+        "quantity": 4.5,
+        "unit": "gram",
+        "edges": {
+          "ingredient": {
+            "id": 15,
+            "name": "ingredient_15",
+            "edges": {}
+          }
+        }
+      }
+    ]
+  }
+}
