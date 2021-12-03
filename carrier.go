@@ -213,7 +213,7 @@ func (s *EntSchema) Fields() []Field {
 		if strings.HasPrefix(method.Name, "SetNillable") {
 			continue
 		}
-		fieldName := strings.TrimLeft(method.Name, "Set")
+		fieldName := strings.TrimPrefix(method.Name, "Set")
 		fieldInput := method.Type.In(1)
 		f := Field{
 			Name:      fieldName,
