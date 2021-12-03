@@ -31,10 +31,6 @@ return &Factory{}
     }
 {{end}}
 
-func NewEntFactory(client *ent.Client) *EntFactory {
-return &EntFactory{client: client}
-}
-
 {{if .EntSchemas}}
     type EntFactory struct {
     {{range .EntSchemas}}
@@ -42,7 +38,10 @@ return &EntFactory{client: client}
     {{end}}
     client *ent.Client
     }
-
+    
+    func NewEntFactory(client *ent.Client) *EntFactory {
+    return &EntFactory{client: client}
+    }
 
     func (f *EntFactory) Client() *ent.Client {
     return f.client
