@@ -346,4 +346,6 @@ Create slice of struct pointer.
 Create slice of struct.
 
 ## Common Recipes
+- [Recipe Example](examples/recipe/main.go)
+- (WIP)Ent Recipe Example
 
