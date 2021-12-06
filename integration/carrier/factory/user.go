@@ -122,34 +122,49 @@ func (*userMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (string,
 	}
 }
 
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (f *UserMetaFactory) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *UserMetaFactory {
 	f.mutation.nameSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (f *UserMetaFactory) SetNameLazy(fn func(ctx context.Context, i *model.User) (string, error)) *UserMetaFactory {
 	f.mutation.nameLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameDefault assign a default value to Name field
 func (f *UserMetaFactory) SetNameDefault(v string) *UserMetaFactory {
 	f.mutation.nameDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (f *UserMetaFactory) SetNameFactory(fn func(ctx context.Context) (string, error)) *UserMetaFactory {
 	f.mutation.nameFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (t *userTrait) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.nameSequenceMutateFunc(fn))
 	return t
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (t *userTrait) SetNameLazy(fn func(ctx context.Context, i *model.User) (string, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.nameLazyMutateFunc(fn))
 	return t
 }
+
+// SetNameDefault assign a default value to Name field
 func (t *userTrait) SetNameDefault(v string) *userTrait {
 	t.updates = append(t.updates, t.mutation.nameDefaultMutateFunc(v))
 	return t
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (t *userTrait) SetNameFactory(fn func(ctx context.Context) (string, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.nameFactoryMutateFunc(fn))
 	return t
@@ -218,34 +233,49 @@ func (*userMutation) emailFactoryMutateFunc(fn func(ctx context.Context) (string
 	}
 }
 
+// SetEmailSequence register a function which accept a sequence counter and set return value to Email field
 func (f *UserMetaFactory) SetEmailSequence(fn func(ctx context.Context, i int) (string, error)) *UserMetaFactory {
 	f.mutation.emailSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetEmailLazy register a function which accept the build struct and set return value to Email field
 func (f *UserMetaFactory) SetEmailLazy(fn func(ctx context.Context, i *model.User) (string, error)) *UserMetaFactory {
 	f.mutation.emailLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetEmailDefault assign a default value to Email field
 func (f *UserMetaFactory) SetEmailDefault(v string) *UserMetaFactory {
 	f.mutation.emailDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetEmailFactory register a factory function and assign return value to Email, you can also use related factory's Create/CreateV as input function here
 func (f *UserMetaFactory) SetEmailFactory(fn func(ctx context.Context) (string, error)) *UserMetaFactory {
 	f.mutation.emailFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetEmailSequence register a function which accept a sequence counter and set return value to Email field
 func (t *userTrait) SetEmailSequence(fn func(ctx context.Context, i int) (string, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.emailSequenceMutateFunc(fn))
 	return t
 }
+
+// SetEmailLazy register a function which accept the build struct and set return value to Email field
 func (t *userTrait) SetEmailLazy(fn func(ctx context.Context, i *model.User) (string, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.emailLazyMutateFunc(fn))
 	return t
 }
+
+// SetEmailDefault assign a default value to Email field
 func (t *userTrait) SetEmailDefault(v string) *userTrait {
 	t.updates = append(t.updates, t.mutation.emailDefaultMutateFunc(v))
 	return t
 }
+
+// SetEmailFactory register a factory function and assign return value to Email, you can also use related factory's Create/CreateV as input function here
 func (t *userTrait) SetEmailFactory(fn func(ctx context.Context) (string, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.emailFactoryMutateFunc(fn))
 	return t
@@ -314,34 +344,49 @@ func (*userMutation) titleFactoryMutateFunc(fn func(ctx context.Context) (string
 	}
 }
 
+// SetTitleSequence register a function which accept a sequence counter and set return value to Title field
 func (f *UserMetaFactory) SetTitleSequence(fn func(ctx context.Context, i int) (string, error)) *UserMetaFactory {
 	f.mutation.titleSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetTitleLazy register a function which accept the build struct and set return value to Title field
 func (f *UserMetaFactory) SetTitleLazy(fn func(ctx context.Context, i *model.User) (string, error)) *UserMetaFactory {
 	f.mutation.titleLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetTitleDefault assign a default value to Title field
 func (f *UserMetaFactory) SetTitleDefault(v string) *UserMetaFactory {
 	f.mutation.titleDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetTitleFactory register a factory function and assign return value to Title, you can also use related factory's Create/CreateV as input function here
 func (f *UserMetaFactory) SetTitleFactory(fn func(ctx context.Context) (string, error)) *UserMetaFactory {
 	f.mutation.titleFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetTitleSequence register a function which accept a sequence counter and set return value to Title field
 func (t *userTrait) SetTitleSequence(fn func(ctx context.Context, i int) (string, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.titleSequenceMutateFunc(fn))
 	return t
 }
+
+// SetTitleLazy register a function which accept the build struct and set return value to Title field
 func (t *userTrait) SetTitleLazy(fn func(ctx context.Context, i *model.User) (string, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.titleLazyMutateFunc(fn))
 	return t
 }
+
+// SetTitleDefault assign a default value to Title field
 func (t *userTrait) SetTitleDefault(v string) *userTrait {
 	t.updates = append(t.updates, t.mutation.titleDefaultMutateFunc(v))
 	return t
 }
+
+// SetTitleFactory register a factory function and assign return value to Title, you can also use related factory's Create/CreateV as input function here
 func (t *userTrait) SetTitleFactory(fn func(ctx context.Context) (string, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.titleFactoryMutateFunc(fn))
 	return t
@@ -410,34 +455,49 @@ func (*userMutation) groupFactoryMutateFunc(fn func(ctx context.Context) (*model
 	}
 }
 
+// SetGroupSequence register a function which accept a sequence counter and set return value to Group field
 func (f *UserMetaFactory) SetGroupSequence(fn func(ctx context.Context, i int) (*model.Group, error)) *UserMetaFactory {
 	f.mutation.groupSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetGroupLazy register a function which accept the build struct and set return value to Group field
 func (f *UserMetaFactory) SetGroupLazy(fn func(ctx context.Context, i *model.User) (*model.Group, error)) *UserMetaFactory {
 	f.mutation.groupLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetGroupDefault assign a default value to Group field
 func (f *UserMetaFactory) SetGroupDefault(v *model.Group) *UserMetaFactory {
 	f.mutation.groupDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetGroupFactory register a factory function and assign return value to Group, you can also use related factory's Create/CreateV as input function here
 func (f *UserMetaFactory) SetGroupFactory(fn func(ctx context.Context) (*model.Group, error)) *UserMetaFactory {
 	f.mutation.groupFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetGroupSequence register a function which accept a sequence counter and set return value to Group field
 func (t *userTrait) SetGroupSequence(fn func(ctx context.Context, i int) (*model.Group, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.groupSequenceMutateFunc(fn))
 	return t
 }
+
+// SetGroupLazy register a function which accept the build struct and set return value to Group field
 func (t *userTrait) SetGroupLazy(fn func(ctx context.Context, i *model.User) (*model.Group, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.groupLazyMutateFunc(fn))
 	return t
 }
+
+// SetGroupDefault assign a default value to Group field
 func (t *userTrait) SetGroupDefault(v *model.Group) *userTrait {
 	t.updates = append(t.updates, t.mutation.groupDefaultMutateFunc(v))
 	return t
 }
+
+// SetGroupFactory register a factory function and assign return value to Group, you can also use related factory's Create/CreateV as input function here
 func (t *userTrait) SetGroupFactory(fn func(ctx context.Context) (*model.Group, error)) *userTrait {
 	t.updates = append(t.updates, t.mutation.groupFactoryMutateFunc(fn))
 	return t
@@ -448,6 +508,8 @@ func (*userMutation) fooPostMutateFunc(fn func(ctx context.Context, set bool, ob
 		m._postFooFunc = fn
 	}
 }
+
+// SetFooPostFunc register a post function which will be called in factory SetFooPost method
 func (f *UserMetaFactory) SetFooPostFunc(fn func(ctx context.Context, set bool, obj *model.User, i string) error) *UserMetaFactory {
 	f.mutation.fooPostMutateFunc(fn)(&f.mutation)
 	return f
@@ -457,60 +519,73 @@ func (t *userTrait) SetFooPostFunc(fn func(ctx context.Context, set bool, obj *m
 	return t
 }
 
+// SetDefaultTrait accept a userTrait, will override builder using Trait's methods if enable
 func (f *UserMetaFactory) SetDefaultTrait(t *userTrait) *UserMetaFactory {
 	f.defaultTrait = t
 	return f
 }
 
+// SetLazyTrait accept a userTrait, will override builder using Trait's methods if enable
 func (f *UserMetaFactory) SetLazyTrait(t *userTrait) *UserMetaFactory {
 	f.lazyTrait = t
 	return f
 }
 
+// SetSequenceTrait accept a userTrait, will override builder using Trait's methods if enable
 func (f *UserMetaFactory) SetSequenceTrait(t *userTrait) *UserMetaFactory {
 	f.sequenceTrait = t
 	return f
 }
 
+// SetFactoryTrait accept a userTrait, will override builder using Trait's methods if enable
 func (f *UserMetaFactory) SetFactoryTrait(t *userTrait) *UserMetaFactory {
 	f.factoryTrait = t
 	return f
 }
 
+// SetAnonymousTrait accept a userTrait, will override builder using Trait's methods if enable
 func (f *UserMetaFactory) SetAnonymousTrait(t *userTrait) *UserMetaFactory {
 	f.anonymousTrait = t
 	return f
 }
 
+// SetNilTrait accept a userTrait, will override builder using Trait's methods if enable
 func (f *UserMetaFactory) SetNilTrait(t *userTrait) *UserMetaFactory {
 	f.nilTrait = t
 	return f
 }
 
+// SetMixnameTrait accept a userTrait, will override builder using Trait's methods if enable
 func (f *UserMetaFactory) SetMixnameTrait(t *userTrait) *UserMetaFactory {
 	f.mixnameTrait = t
 	return f
 }
 
+// SetMixemailTrait accept a userTrait, will override builder using Trait's methods if enable
 func (f *UserMetaFactory) SetMixemailTrait(t *userTrait) *UserMetaFactory {
 	f.mixemailTrait = t
 	return f
 }
 
+// SetMixtitleTrait accept a userTrait, will override builder using Trait's methods if enable
 func (f *UserMetaFactory) SetMixtitleTrait(t *userTrait) *UserMetaFactory {
 	f.mixtitleTrait = t
 	return f
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *UserMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *model.User) error) *UserMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *userTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.User) error) *userTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// Build create a  UserFactory from UserMetaFactory
 func (f *UserMetaFactory) Build() *UserFactory {
 	return &UserFactory{meta: *f, counter: &Counter{}}
 }
@@ -520,6 +595,7 @@ type UserFactory struct {
 	counter *Counter
 }
 
+// SetName set the Name field
 func (f *UserFactory) SetName(i string) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
@@ -527,6 +603,7 @@ func (f *UserFactory) SetName(i string) *UserBuilder {
 	return builder
 }
 
+// SetEmail set the Email field
 func (f *UserFactory) SetEmail(i string) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetEmail(i)
@@ -534,6 +611,7 @@ func (f *UserFactory) SetEmail(i string) *UserBuilder {
 	return builder
 }
 
+// SetTitle set the Title field
 func (f *UserFactory) SetTitle(i string) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetTitle(i)
@@ -541,6 +619,7 @@ func (f *UserFactory) SetTitle(i string) *UserBuilder {
 	return builder
 }
 
+// SetGroup set the Group field
 func (f *UserFactory) SetGroup(i *model.Group) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetGroup(i)
@@ -548,6 +627,7 @@ func (f *UserFactory) SetGroup(i *model.Group) *UserBuilder {
 	return builder
 }
 
+// SetFooPost call the post function with string input
 func (f *UserFactory) SetFooPost(i string) *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetFooPost(i)
@@ -555,6 +635,7 @@ func (f *UserFactory) SetFooPost(i string) *UserBuilder {
 	return builder
 }
 
+// WithDefaultTrait() enable the Default trait
 func (f *UserFactory) WithDefaultTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -568,6 +649,7 @@ func (f *UserFactory) WithDefaultTrait() *UserBuilder {
 	return builder
 }
 
+// WithLazyTrait() enable the Lazy trait
 func (f *UserFactory) WithLazyTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -581,6 +663,7 @@ func (f *UserFactory) WithLazyTrait() *UserBuilder {
 	return builder
 }
 
+// WithSequenceTrait() enable the Sequence trait
 func (f *UserFactory) WithSequenceTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -594,6 +677,7 @@ func (f *UserFactory) WithSequenceTrait() *UserBuilder {
 	return builder
 }
 
+// WithFactoryTrait() enable the Factory trait
 func (f *UserFactory) WithFactoryTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -607,6 +691,7 @@ func (f *UserFactory) WithFactoryTrait() *UserBuilder {
 	return builder
 }
 
+// WithAnonymousTrait() enable the Anonymous trait
 func (f *UserFactory) WithAnonymousTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -620,6 +705,7 @@ func (f *UserFactory) WithAnonymousTrait() *UserBuilder {
 	return builder
 }
 
+// WithNilTrait() enable the Nil trait
 func (f *UserFactory) WithNilTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -633,6 +719,7 @@ func (f *UserFactory) WithNilTrait() *UserBuilder {
 	return builder
 }
 
+// WithMixnameTrait() enable the Mixname trait
 func (f *UserFactory) WithMixnameTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -646,6 +733,7 @@ func (f *UserFactory) WithMixnameTrait() *UserBuilder {
 	return builder
 }
 
+// WithMixemailTrait() enable the Mixemail trait
 func (f *UserFactory) WithMixemailTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -659,6 +747,7 @@ func (f *UserFactory) WithMixemailTrait() *UserBuilder {
 	return builder
 }
 
+// WithMixtitleTrait() enable the Mixtitle trait
 func (f *UserFactory) WithMixtitleTrait() *UserBuilder {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -672,21 +761,28 @@ func (f *UserFactory) WithMixtitleTrait() *UserBuilder {
 	return builder
 }
 
+// Create return a new *model.User
 func (f *UserFactory) Create(ctx context.Context) (*model.User, error) {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new model.User
 func (f *UserFactory) CreateV(ctx context.Context) (model.User, error) {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*model.User slice
 func (f *UserFactory) CreateBatch(ctx context.Context, n int) ([]*model.User, error) {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []model.User slice
 func (f *UserFactory) CreateBatchV(ctx context.Context, n int) ([]model.User, error) {
 	builder := &UserBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -714,36 +810,42 @@ type UserBuilder struct {
 	_postFooSet bool
 }
 
+// SetName set the Name field
 func (b *UserBuilder) SetName(i string) *UserBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
 	return b
 }
 
+// SetEmail set the Email field
 func (b *UserBuilder) SetEmail(i string) *UserBuilder {
 	b.emailOverride = i
 	b.emailOverriden = true
 	return b
 }
 
+// SetTitle set the Title field
 func (b *UserBuilder) SetTitle(i string) *UserBuilder {
 	b.titleOverride = i
 	b.titleOverriden = true
 	return b
 }
 
+// SetGroup set the Group field
 func (b *UserBuilder) SetGroup(i *model.Group) *UserBuilder {
 	b.groupOverride = i
 	b.groupOverriden = true
 	return b
 }
 
+// SetFooPost call the post function with string input
 func (b *UserBuilder) SetFooPost(i string) *UserBuilder {
 	b._postFoo = i
 	b._postFooSet = true
 	return b
 }
 
+// WithDefaultTrait() enable the Default trait
 func (b *UserBuilder) WithDefaultTrait() *UserBuilder {
 	if b.factory.meta.defaultTrait == nil {
 		return b
@@ -754,6 +856,7 @@ func (b *UserBuilder) WithDefaultTrait() *UserBuilder {
 	return b
 }
 
+// WithLazyTrait() enable the Lazy trait
 func (b *UserBuilder) WithLazyTrait() *UserBuilder {
 	if b.factory.meta.lazyTrait == nil {
 		return b
@@ -764,6 +867,7 @@ func (b *UserBuilder) WithLazyTrait() *UserBuilder {
 	return b
 }
 
+// WithSequenceTrait() enable the Sequence trait
 func (b *UserBuilder) WithSequenceTrait() *UserBuilder {
 	if b.factory.meta.sequenceTrait == nil {
 		return b
@@ -774,6 +878,7 @@ func (b *UserBuilder) WithSequenceTrait() *UserBuilder {
 	return b
 }
 
+// WithFactoryTrait() enable the Factory trait
 func (b *UserBuilder) WithFactoryTrait() *UserBuilder {
 	if b.factory.meta.factoryTrait == nil {
 		return b
@@ -784,6 +889,7 @@ func (b *UserBuilder) WithFactoryTrait() *UserBuilder {
 	return b
 }
 
+// WithAnonymousTrait() enable the Anonymous trait
 func (b *UserBuilder) WithAnonymousTrait() *UserBuilder {
 	if b.factory.meta.anonymousTrait == nil {
 		return b
@@ -794,6 +900,7 @@ func (b *UserBuilder) WithAnonymousTrait() *UserBuilder {
 	return b
 }
 
+// WithNilTrait() enable the Nil trait
 func (b *UserBuilder) WithNilTrait() *UserBuilder {
 	if b.factory.meta.nilTrait == nil {
 		return b
@@ -804,6 +911,7 @@ func (b *UserBuilder) WithNilTrait() *UserBuilder {
 	return b
 }
 
+// WithMixnameTrait() enable the Mixname trait
 func (b *UserBuilder) WithMixnameTrait() *UserBuilder {
 	if b.factory.meta.mixnameTrait == nil {
 		return b
@@ -814,6 +922,7 @@ func (b *UserBuilder) WithMixnameTrait() *UserBuilder {
 	return b
 }
 
+// WithMixemailTrait() enable the Mixemail trait
 func (b *UserBuilder) WithMixemailTrait() *UserBuilder {
 	if b.factory.meta.mixemailTrait == nil {
 		return b
@@ -824,6 +933,7 @@ func (b *UserBuilder) WithMixemailTrait() *UserBuilder {
 	return b
 }
 
+// WithMixtitleTrait() enable the Mixtitle trait
 func (b *UserBuilder) WithMixtitleTrait() *UserBuilder {
 	if b.factory.meta.mixtitleTrait == nil {
 		return b
@@ -834,6 +944,7 @@ func (b *UserBuilder) WithMixtitleTrait() *UserBuilder {
 	return b
 }
 
+// CreateV return a new model.User
 func (b *UserBuilder) CreateV(ctx context.Context) (model.User, error) {
 	var d model.User
 	p, err := b.Create(ctx)
@@ -843,6 +954,7 @@ func (b *UserBuilder) CreateV(ctx context.Context) (model.User, error) {
 	return d, err
 }
 
+// Create return a new *model.User
 func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 
 	var preSlice = []func(ctx context.Context, i *model.User, c int) error{}

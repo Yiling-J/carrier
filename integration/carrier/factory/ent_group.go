@@ -107,53 +107,73 @@ func (*entGroupMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (str
 	}
 }
 
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (f *EntGroupMetaFactory) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *EntGroupMetaFactory {
 	f.mutation.nameSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (f *EntGroupMetaFactory) SetNameLazy(fn func(ctx context.Context, i *EntGroupMutator) (string, error)) *EntGroupMetaFactory {
 	f.mutation.nameLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameDefault assign a default value to Name field
 func (f *EntGroupMetaFactory) SetNameDefault(v string) *EntGroupMetaFactory {
 	f.mutation.nameDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (f *EntGroupMetaFactory) SetNameFactory(fn func(ctx context.Context) (string, error)) *EntGroupMetaFactory {
 	f.mutation.nameFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (t *entGroupTrait) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *entGroupTrait {
 	t.updates = append(t.updates, t.mutation.nameSequenceMutateFunc(fn))
 	return t
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (t *entGroupTrait) SetNameLazy(fn func(ctx context.Context, i *EntGroupMutator) (string, error)) *entGroupTrait {
 	t.updates = append(t.updates, t.mutation.nameLazyMutateFunc(fn))
 	return t
 }
+
+// SetNameDefault assign a default value to Name field
 func (t *entGroupTrait) SetNameDefault(v string) *entGroupTrait {
 	t.updates = append(t.updates, t.mutation.nameDefaultMutateFunc(v))
 	return t
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (t *entGroupTrait) SetNameFactory(fn func(ctx context.Context) (string, error)) *entGroupTrait {
 	t.updates = append(t.updates, t.mutation.nameFactoryMutateFunc(fn))
 	return t
 }
 
+// SetNouserTrait accept a entGroupTrait, will override builder using Trait's methods if enable
 func (f *EntGroupMetaFactory) SetNouserTrait(t *entGroupTrait) *EntGroupMetaFactory {
 	f.nouserTrait = t
 	return f
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *EntGroupMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Group) error) *EntGroupMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *entGroupTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Group) error) *entGroupTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// Build create a  EntGroupFactory from EntGroupMetaFactory
 func (f *EntGroupMetaFactory) Build() *EntGroupFactory {
 	return &EntGroupFactory{meta: *f, counter: &Counter{}}
 }
@@ -165,6 +185,7 @@ type EntGroupFactory struct {
 	client *ent.Client
 }
 
+// SetName set the Name field
 func (f *EntGroupFactory) SetName(i string) *EntGroupBuilder {
 	builder := &EntGroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
@@ -174,6 +195,7 @@ func (f *EntGroupFactory) SetName(i string) *EntGroupBuilder {
 	return builder
 }
 
+// WithNouserTrait() enable the Nouser trait
 func (f *EntGroupFactory) WithNouserTrait() *EntGroupBuilder {
 	builder := &EntGroupBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -189,6 +211,7 @@ func (f *EntGroupFactory) WithNouserTrait() *EntGroupBuilder {
 	return builder
 }
 
+// Create return a new *ent.Group
 func (f *EntGroupFactory) Create(ctx context.Context) (*ent.Group, error) {
 	builder := &EntGroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -196,6 +219,8 @@ func (f *EntGroupFactory) Create(ctx context.Context) (*ent.Group, error) {
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new ent.Group
 func (f *EntGroupFactory) CreateV(ctx context.Context) (ent.Group, error) {
 	builder := &EntGroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -203,6 +228,8 @@ func (f *EntGroupFactory) CreateV(ctx context.Context) (ent.Group, error) {
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*ent.Group slice
 func (f *EntGroupFactory) CreateBatch(ctx context.Context, n int) ([]*ent.Group, error) {
 	builder := &EntGroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -210,6 +237,8 @@ func (f *EntGroupFactory) CreateBatch(ctx context.Context, n int) ([]*ent.Group,
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []ent.Group slice
 func (f *EntGroupFactory) CreateBatchV(ctx context.Context, n int) ([]ent.Group, error) {
 	builder := &EntGroupBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -218,6 +247,7 @@ func (f *EntGroupFactory) CreateBatchV(ctx context.Context, n int) ([]ent.Group,
 	return builder.CreateBatchV(ctx, n)
 }
 
+// Client set ent client to EntGroupFactory
 func (f *EntGroupFactory) Client(c *ent.Client) *EntGroupFactory {
 	f.client = c
 	return f
@@ -239,12 +269,14 @@ func (b *EntGroupBuilder) Client(c *ent.Client) *EntGroupBuilder {
 	return b
 }
 
+// SetName set the Name field
 func (b *EntGroupBuilder) SetName(i string) *EntGroupBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
 	return b
 }
 
+// WithNouserTrait() enable the Nouser trait
 func (b *EntGroupBuilder) WithNouserTrait() *EntGroupBuilder {
 	if b.factory.meta.nouserTrait == nil {
 		return b
@@ -255,6 +287,7 @@ func (b *EntGroupBuilder) WithNouserTrait() *EntGroupBuilder {
 	return b
 }
 
+// CreateV return a new ent.Group
 func (b *EntGroupBuilder) CreateV(ctx context.Context) (ent.Group, error) {
 	var d ent.Group
 	p, err := b.Create(ctx)
@@ -264,6 +297,7 @@ func (b *EntGroupBuilder) CreateV(ctx context.Context) (ent.Group, error) {
 	return d, err
 }
 
+// Create return a new *ent.Group
 func (b *EntGroupBuilder) Create(ctx context.Context) (*ent.Group, error) {
 
 	var preSlice = []func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error{}

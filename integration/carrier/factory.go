@@ -7,6 +7,7 @@ import (
 	"github.com/Yiling-J/carrier/integration/ent"
 )
 
+// Factory is struct factory wrapper
 type Factory struct {
 	groupCategoryFactory *factory.GroupCategoryFactory
 
@@ -19,70 +20,92 @@ type Factory struct {
 	userFactory *factory.UserFactory
 }
 
+// NewFactory return a new struct factory wrapper
 func NewFactory() *Factory {
 	return &Factory{}
 }
 
+// GroupCategoryMetaFactory() return a new GroupCategoryMetaFactory
 func GroupCategoryMetaFactory() *factory.GroupCategoryMetaFactory {
 	return &factory.GroupCategoryMetaFactory{}
 }
+
+// SetGroupCategoryFactory set a factory in wrapper
 func (f *Factory) SetGroupCategoryFactory(c *factory.GroupCategoryFactory) *Factory {
 	f.groupCategoryFactory = c
 	return f
 }
 
+// GroupCategoryFactory return the GroupCategoryFactory in wrapper
 func (f *Factory) GroupCategoryFactory() *factory.GroupCategoryFactory {
 	return f.groupCategoryFactory
 }
 
+// GroupMetaFactory() return a new GroupMetaFactory
 func GroupMetaFactory() *factory.GroupMetaFactory {
 	return &factory.GroupMetaFactory{}
 }
+
+// SetGroupFactory set a factory in wrapper
 func (f *Factory) SetGroupFactory(c *factory.GroupFactory) *Factory {
 	f.groupFactory = c
 	return f
 }
 
+// GroupFactory return the GroupFactory in wrapper
 func (f *Factory) GroupFactory() *factory.GroupFactory {
 	return f.groupFactory
 }
 
+// BarMetaFactory() return a new BarMetaFactory
 func BarMetaFactory() *factory.BarMetaFactory {
 	return &factory.BarMetaFactory{}
 }
+
+// SetBarFactory set a factory in wrapper
 func (f *Factory) SetBarFactory(c *factory.BarFactory) *Factory {
 	f.barFactory = c
 	return f
 }
 
+// BarFactory return the BarFactory in wrapper
 func (f *Factory) BarFactory() *factory.BarFactory {
 	return f.barFactory
 }
 
+// FoodMetaFactory() return a new FoodMetaFactory
 func FoodMetaFactory() *factory.FoodMetaFactory {
 	return &factory.FoodMetaFactory{}
 }
+
+// SetFoodFactory set a factory in wrapper
 func (f *Factory) SetFoodFactory(c *factory.FoodFactory) *Factory {
 	f.foodFactory = c
 	return f
 }
 
+// FoodFactory return the FoodFactory in wrapper
 func (f *Factory) FoodFactory() *factory.FoodFactory {
 	return f.foodFactory
 }
 
+// UserMetaFactory() return a new UserMetaFactory
 func UserMetaFactory() *factory.UserMetaFactory {
 	return &factory.UserMetaFactory{}
 }
+
+// SetUserFactory set a factory in wrapper
 func (f *Factory) SetUserFactory(c *factory.UserFactory) *Factory {
 	f.userFactory = c
 	return f
 }
 
+// UserFactory return the UserFactory in wrapper
 func (f *Factory) UserFactory() *factory.UserFactory {
 	return f.userFactory
 }
 
+// EntFactory is ent factory wrapper
 type EntFactory struct {
 	userFactory *factory.EntUserFactory
 
@@ -93,43 +116,60 @@ type EntFactory struct {
 	client *ent.Client
 }
 
+// NewEntFactory return a new ent factory wrapper
 func NewEntFactory(client *ent.Client) *EntFactory {
 	return &EntFactory{client: client}
 }
 
+// Client return wrappper's ent client
 func (f *EntFactory) Client() *ent.Client {
 	return f.client
 }
 
+// EntUserMetaFactory return a new meta factory with given ent client
 func EntUserMetaFactory() *factory.EntUserMetaFactory {
 	return &factory.EntUserMetaFactory{}
 }
+
+// SetUserFactory set a factory in wrapper
 func (f *EntFactory) SetUserFactory(c *factory.EntUserFactory) *EntFactory {
 	f.userFactory = c.Client(f.client)
 	return f
 }
+
+// UserFactory return the EntUserFactory in wrapper
 func (f *EntFactory) UserFactory() *factory.EntUserFactory {
 	return f.userFactory
 }
 
+// EntCarMetaFactory return a new meta factory with given ent client
 func EntCarMetaFactory() *factory.EntCarMetaFactory {
 	return &factory.EntCarMetaFactory{}
 }
+
+// SetCarFactory set a factory in wrapper
 func (f *EntFactory) SetCarFactory(c *factory.EntCarFactory) *EntFactory {
 	f.carFactory = c.Client(f.client)
 	return f
 }
+
+// CarFactory return the EntCarFactory in wrapper
 func (f *EntFactory) CarFactory() *factory.EntCarFactory {
 	return f.carFactory
 }
 
+// EntGroupMetaFactory return a new meta factory with given ent client
 func EntGroupMetaFactory() *factory.EntGroupMetaFactory {
 	return &factory.EntGroupMetaFactory{}
 }
+
+// SetGroupFactory set a factory in wrapper
 func (f *EntFactory) SetGroupFactory(c *factory.EntGroupFactory) *EntFactory {
 	f.groupFactory = c.Client(f.client)
 	return f
 }
+
+// GroupFactory return the EntGroupFactory in wrapper
 func (f *EntFactory) GroupFactory() *factory.EntGroupFactory {
 	return f.groupFactory
 }

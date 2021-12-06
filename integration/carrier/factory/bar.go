@@ -93,48 +93,67 @@ func (*barMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (string, 
 	}
 }
 
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (f *BarMetaFactory) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *BarMetaFactory {
 	f.mutation.nameSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (f *BarMetaFactory) SetNameLazy(fn func(ctx context.Context, i *model.Foo) (string, error)) *BarMetaFactory {
 	f.mutation.nameLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameDefault assign a default value to Name field
 func (f *BarMetaFactory) SetNameDefault(v string) *BarMetaFactory {
 	f.mutation.nameDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (f *BarMetaFactory) SetNameFactory(fn func(ctx context.Context) (string, error)) *BarMetaFactory {
 	f.mutation.nameFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (t *barTrait) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *barTrait {
 	t.updates = append(t.updates, t.mutation.nameSequenceMutateFunc(fn))
 	return t
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (t *barTrait) SetNameLazy(fn func(ctx context.Context, i *model.Foo) (string, error)) *barTrait {
 	t.updates = append(t.updates, t.mutation.nameLazyMutateFunc(fn))
 	return t
 }
+
+// SetNameDefault assign a default value to Name field
 func (t *barTrait) SetNameDefault(v string) *barTrait {
 	t.updates = append(t.updates, t.mutation.nameDefaultMutateFunc(v))
 	return t
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (t *barTrait) SetNameFactory(fn func(ctx context.Context) (string, error)) *barTrait {
 	t.updates = append(t.updates, t.mutation.nameFactoryMutateFunc(fn))
 	return t
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *BarMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Foo) error) *BarMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *barTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Foo) error) *barTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// Build create a  BarFactory from BarMetaFactory
 func (f *BarMetaFactory) Build() *BarFactory {
 	return &BarFactory{meta: *f, counter: &Counter{}}
 }
@@ -144,6 +163,7 @@ type BarFactory struct {
 	counter *Counter
 }
 
+// SetName set the Name field
 func (f *BarFactory) SetName(i string) *BarBuilder {
 	builder := &BarBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
@@ -151,21 +171,28 @@ func (f *BarFactory) SetName(i string) *BarBuilder {
 	return builder
 }
 
+// Create return a new *model.Foo
 func (f *BarFactory) Create(ctx context.Context) (*model.Foo, error) {
 	builder := &BarBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new model.Foo
 func (f *BarFactory) CreateV(ctx context.Context) (model.Foo, error) {
 	builder := &BarBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*model.Foo slice
 func (f *BarFactory) CreateBatch(ctx context.Context, n int) ([]*model.Foo, error) {
 	builder := &BarBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []model.Foo slice
 func (f *BarFactory) CreateBatchV(ctx context.Context, n int) ([]model.Foo, error) {
 	builder := &BarBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -181,12 +208,14 @@ type BarBuilder struct {
 	nameOverriden bool
 }
 
+// SetName set the Name field
 func (b *BarBuilder) SetName(i string) *BarBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
 	return b
 }
 
+// CreateV return a new model.Foo
 func (b *BarBuilder) CreateV(ctx context.Context) (model.Foo, error) {
 	var d model.Foo
 	p, err := b.Create(ctx)
@@ -196,6 +225,7 @@ func (b *BarBuilder) CreateV(ctx context.Context) (model.Foo, error) {
 	return d, err
 }
 
+// Create return a new *model.Foo
 func (b *BarBuilder) Create(ctx context.Context) (*model.Foo, error) {
 
 	var preSlice = []func(ctx context.Context, i *model.Foo, c int) error{}

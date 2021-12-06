@@ -7,54 +7,62 @@ import (
 {{end}}
 )
 
+// Factory is struct factory wrapper
 type Factory struct {
 {{range .Schemas}}
     {{.Name | FirstLower}}Factory *factory.{{.Name}}Factory
 {{end}}
 }
 
+// NewFactory return a new struct factory wrapper
 func NewFactory() *Factory {
 return &Factory{}
 }
 
 {{range .Schemas}}
+    // {{.Name}}MetaFactory() return a new {{.Name}}MetaFactory
     func {{.Name}}MetaFactory() *factory.{{.Name}}MetaFactory {
     return &factory.{{.Name}}MetaFactory{}
     }
+    // Set{{.Name}}Factory set a factory in wrapper
     func (f *Factory) Set{{.Name}}Factory(c *factory.{{.Name}}Factory) *Factory {
     f.{{.Name | FirstLower}}Factory = c
     return f
     }
-
+    // {{.Name}}Factory return the {{.Name}}Factory in wrapper
     func (f *Factory) {{.Name}}Factory() *factory.{{.Name}}Factory {
     return f.{{.Name | FirstLower}}Factory
     }
 {{end}}
 
 {{if .EntSchemas}}
+    // EntFactory is ent factory wrapper
     type EntFactory struct {
     {{range .EntSchemas}}
 	{{.Name | FirstLower}}Factory *factory.Ent{{.Name}}Factory
     {{end}}
     client *ent.Client
     }
-    
+    // NewEntFactory return a new ent factory wrapper
     func NewEntFactory(client *ent.Client) *EntFactory {
     return &EntFactory{client: client}
     }
-
+    // Client return wrappper's ent client
     func (f *EntFactory) Client() *ent.Client {
     return f.client
     }
 
     {{range .EntSchemas}}
+	// Ent{{.Name}}MetaFactory return a new meta factory with given ent client
 	func Ent{{.Name}}MetaFactory() *factory.Ent{{.Name}}MetaFactory {
 	return &factory.Ent{{.Name}}MetaFactory{}
 	}
+	// Set{{.Name}}Factory set a factory in wrapper
 	func (f *EntFactory) Set{{.Name}}Factory(c *factory.Ent{{.Name}}Factory) *EntFactory {
 	f.{{.Name | FirstLower}}Factory = c.Client(f.client)
 	return f
 	}
+	// {{.Name}}Factory return the Ent{{.Name}}Factory in wrapper
 	func (f *EntFactory) {{.Name}}Factory() *factory.Ent{{.Name}}Factory {
 	return f.{{.Name | FirstLower}}Factory
 	}

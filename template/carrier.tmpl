@@ -132,35 +132,42 @@ import (
 	}
 	}
 	}
-
+	// Set{{.Name}}Sequence register a function which accept a sequence counter and set return value to {{.Name}} field
 	func (f *{{$SchemaName}}MetaFactory) Set{{.Name}}Sequence(fn func(ctx context.Context, i int) ({{.ValueType}}, error)) *{{$SchemaName}}MetaFactory {
 	f.mutation.{{.Name | FirstLower}}SequenceMutateFunc(fn)(&f.mutation)
 	return f
 	}
+	// Set{{.Name}}Lazy register a function which accept the build struct and set return value to {{.Name}} field
 	func (f *{{$SchemaName}}MetaFactory) Set{{.Name}}Lazy(fn func(ctx context.Context, i *{{$SchemaType}}) ({{.ValueType}}, error)) *{{$SchemaName}}MetaFactory {
 	f.mutation.{{.Name | FirstLower}}LazyMutateFunc(fn)(&f.mutation)
 	return f
 	}
+	// Set{{.Name}}Default assign a default value to {{.Name}} field
 	func (f *{{$SchemaName}}MetaFactory) Set{{.Name}}Default(v {{.ValueType}}) *{{$SchemaName}}MetaFactory {
 	f.mutation.{{.Name | FirstLower}}DefaultMutateFunc(v)(&f.mutation)
 	return f
 	}
+	// Set{{.Name}}Factory register a factory function and assign return value to {{.Name}}, you can also use related factory's Create/CreateV as input function here
 	func (f *{{$SchemaName}}MetaFactory) Set{{.Name}}Factory(fn func(ctx context.Context) ({{.ValueType}}, error)) *{{$SchemaName}}MetaFactory {
 	f.mutation.{{.Name | FirstLower}}FactoryMutateFunc(fn)(&f.mutation)
 	return f
 	}
+	// Set{{.Name}}Sequence register a function which accept a sequence counter and set return value to {{.Name}} field
 	func (t *{{$SchemaName | FirstLower}}Trait) Set{{.Name}}Sequence(fn func(ctx context.Context, i int) ({{.ValueType}}, error)) *{{$SchemaName | FirstLower}}Trait {
 	t.updates = append(t.updates, t.mutation.{{.Name | FirstLower}}SequenceMutateFunc(fn))
 	return t
 	}
+	// Set{{.Name}}Lazy register a function which accept the build struct and set return value to {{.Name}} field
 	func (t *{{$SchemaName | FirstLower}}Trait) Set{{.Name}}Lazy(fn func(ctx context.Context, i *{{$SchemaType}}) ({{.ValueType}}, error)) *{{$SchemaName | FirstLower}}Trait {
 	t.updates = append(t.updates, t.mutation.{{.Name | FirstLower}}LazyMutateFunc(fn))
 	return t
 	}
+	// Set{{.Name}}Default assign a default value to {{.Name}} field
 	func (t *{{$SchemaName | FirstLower}}Trait) Set{{.Name}}Default(v {{.ValueType}}) *{{$SchemaName | FirstLower}}Trait {
 	t.updates = append(t.updates, t.mutation.{{.Name | FirstLower}}DefaultMutateFunc(v))
 	return t
 	}
+	// Set{{.Name}}Factory register a factory function and assign return value to {{.Name}}, you can also use related factory's Create/CreateV as input function here
 	func (t *{{$SchemaName | FirstLower}}Trait) Set{{.Name}}Factory(fn func(ctx context.Context) ({{.ValueType}}, error)) *{{$SchemaName | FirstLower}}Trait {
 	t.updates = append(t.updates, t.mutation.{{.Name | FirstLower}}FactoryMutateFunc(fn))
 	return t
@@ -172,6 +179,7 @@ import (
 	m._post{{.Name}}Func = fn
 	}
 	}
+	// Set{{.Name}}PostFunc register a post function which will be called in factory Set{{.Name}}Post method
 	func (f *{{$SchemaName}}MetaFactory) Set{{.Name}}PostFunc(fn func(ctx context.Context, set bool, obj *{{$CreatedType}}, i {{.ValueType}}) error) *{{$SchemaName}}MetaFactory {
 	f.mutation.{{.Name | FirstLower}}PostMutateFunc(fn)(&f.mutation)
 	return f
@@ -182,20 +190,23 @@ import (
 	}
     {{end}}
     {{range .Traits}}
+	// Set{{.}}Trait accept a {{$SchemaName | FirstLower}}Trait, will override builder using Trait's methods if enable
 	func (f *{{$SchemaName}}MetaFactory) Set{{.}}Trait(t *{{$SchemaName | FirstLower}}Trait) *{{$SchemaName}}MetaFactory {
 	f.{{. | FirstLower}}Trait = t
 	return f
 	}
     {{end}}
+    // SetAfterCreateFunc register a function to be called after struct create
     func (f *{{$SchemaName}}MetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *{{$CreatedType}}) error) *{{$SchemaName}}MetaFactory {
     f.mutation.afterCreateFunc = fn
     return f
     }
+    // SetAfterCreateFunc register a function to be called after struct create
     func (t *{{$SchemaName | FirstLower}}Trait) SetAfterCreateFunc(fn func(ctx context.Context, i *{{$CreatedType}}) error) *{{$SchemaName | FirstLower}}Trait {
     t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
     return t
     }
-
+    // Build create a  {{$SchemaName}}Factory from {{$SchemaName}}MetaFactory
     func (f *{{$SchemaName}}MetaFactory) Build() *{{$SchemaName}}Factory {
     return &{{$SchemaName}}Factory{meta: *f, counter: &Counter{}}
     }
@@ -209,6 +220,7 @@ import (
     }
 
     {{range .Fields}}
+	// Set{{.Name}} set the {{.Name}} field
 	func (f *{{$SchemaName}}Factory) Set{{.Name}}(i {{.ValueType}}) *{{$SchemaName}}Builder {
 	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.Set{{.Name}}(i)
@@ -219,6 +231,7 @@ import (
 	}
     {{end}}
     {{range .PostFields}}
+	// Set{{.Name}}Post call the post function with {{.ValueType}} input
 	func (f *{{$SchemaName}}Factory) Set{{.Name}}Post(i {{.ValueType}}) *{{$SchemaName}}Builder {
 	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.Set{{.Name}}Post(i)
@@ -229,6 +242,7 @@ import (
 	}
     {{end}}
     {{range .Traits}}
+	// With{{.}}Trait() enable the {{.}} trait
 	func (f *{{$SchemaName}}Factory) With{{.}}Trait() *{{$SchemaName}}Builder {
 	builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -244,6 +258,7 @@ import (
 	return builder
 	}
     {{end}}
+    // Create return a new *{{$CreatedType}}
     func (f *{{$SchemaName}}Factory) Create(ctx context.Context) (*{{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     {{if $EntSchema}}
@@ -251,6 +266,7 @@ import (
     {{end}}
     return builder.Create(ctx)
     }
+    // CreateV return a new {{$CreatedType}}
     func (f *{{$SchemaName}}Factory) CreateV(ctx context.Context) ({{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     {{if $EntSchema}}
@@ -258,6 +274,7 @@ import (
     {{end}}
     return builder.CreateV(ctx)
     }
+    // CreateBatch return a []*{{$CreatedType}} slice
     func (f *{{$SchemaName}}Factory) CreateBatch(ctx context.Context, n int) ([]*{{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     {{if $EntSchema}}
@@ -265,6 +282,7 @@ import (
     {{end}}
     return builder.CreateBatch(ctx, n)
     }
+    // CreateBatchV return a []{{$CreatedType}} slice
     func (f *{{$SchemaName}}Factory) CreateBatchV(ctx context.Context, n int) ([]{{$CreatedType}}, error) {
     builder := &{{$SchemaName}}Builder{mutation: f.meta.mutation, counter: f.counter, factory: f}
     {{if $EntSchema}}
@@ -274,6 +292,7 @@ import (
     }
 
     {{if $EntSchema}}
+	// Client set ent client to {{$SchemaName}}Factory
 	func (f *{{$SchemaName}}Factory) Client(c *ent.Client) *{{$SchemaName}}Factory {
 	f.client = c
 	return f
@@ -303,6 +322,7 @@ import (
 	}
     {{end}}
     {{range .Fields}}
+	// Set{{.Name}} set the {{.Name}} field
 	func (b *{{$SchemaName}}Builder) Set{{.Name}}(i {{.ValueType}}) *{{$SchemaName}}Builder {
 	b.{{.Name | FirstLower}}Override = i
 	b.{{.Name | FirstLower}}Overriden = true
@@ -310,6 +330,7 @@ import (
 	}
     {{end}}
     {{range .PostFields}}
+	// Set{{.Name}}Post call the post function with {{.ValueType}} input
 	func (b *{{$SchemaName}}Builder) Set{{.Name}}Post(i {{.ValueType}}) *{{$SchemaName}}Builder {
 	b._post{{.Name}} = i
 	b._post{{.Name}}Set = true
@@ -317,6 +338,7 @@ import (
 	}
     {{end}}
     {{range .Traits}}
+	// With{{.}}Trait() enable the {{.}} trait
 	func (b *{{$SchemaName}}Builder) With{{.}}Trait() *{{$SchemaName}}Builder {
 	if b.factory.meta.{{. | FirstLower}}Trait == nil {
 	return b
@@ -327,14 +349,14 @@ import (
 	return b
 	}
     {{end}}
-
+    // CreateV return a new {{$CreatedType}}
     func (b *{{$SchemaName}}Builder) CreateV(ctx context.Context) ({{$CreatedType}}, error) {
     var d {{$CreatedType}}
     p, err := b.Create(ctx)
     if err == nil {d = *p}
     return d, err
     }
-
+    // Create return a new *{{$CreatedType}}
     func (b *{{$SchemaName}}Builder) Create(ctx context.Context) (*{{$CreatedType}}, error) {
     {{if $EntSchema}}
 	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *ent.{{.Name}}Create) error{}

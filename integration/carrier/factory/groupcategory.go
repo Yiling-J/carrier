@@ -93,48 +93,67 @@ func (*groupCategoryMutation) nameFactoryMutateFunc(fn func(ctx context.Context)
 	}
 }
 
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (f *GroupCategoryMetaFactory) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *GroupCategoryMetaFactory {
 	f.mutation.nameSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (f *GroupCategoryMetaFactory) SetNameLazy(fn func(ctx context.Context, i *model.GroupCategory) (string, error)) *GroupCategoryMetaFactory {
 	f.mutation.nameLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameDefault assign a default value to Name field
 func (f *GroupCategoryMetaFactory) SetNameDefault(v string) *GroupCategoryMetaFactory {
 	f.mutation.nameDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (f *GroupCategoryMetaFactory) SetNameFactory(fn func(ctx context.Context) (string, error)) *GroupCategoryMetaFactory {
 	f.mutation.nameFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (t *groupCategoryTrait) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *groupCategoryTrait {
 	t.updates = append(t.updates, t.mutation.nameSequenceMutateFunc(fn))
 	return t
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (t *groupCategoryTrait) SetNameLazy(fn func(ctx context.Context, i *model.GroupCategory) (string, error)) *groupCategoryTrait {
 	t.updates = append(t.updates, t.mutation.nameLazyMutateFunc(fn))
 	return t
 }
+
+// SetNameDefault assign a default value to Name field
 func (t *groupCategoryTrait) SetNameDefault(v string) *groupCategoryTrait {
 	t.updates = append(t.updates, t.mutation.nameDefaultMutateFunc(v))
 	return t
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (t *groupCategoryTrait) SetNameFactory(fn func(ctx context.Context) (string, error)) *groupCategoryTrait {
 	t.updates = append(t.updates, t.mutation.nameFactoryMutateFunc(fn))
 	return t
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *GroupCategoryMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *model.GroupCategory) error) *GroupCategoryMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *groupCategoryTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.GroupCategory) error) *groupCategoryTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// Build create a  GroupCategoryFactory from GroupCategoryMetaFactory
 func (f *GroupCategoryMetaFactory) Build() *GroupCategoryFactory {
 	return &GroupCategoryFactory{meta: *f, counter: &Counter{}}
 }
@@ -144,6 +163,7 @@ type GroupCategoryFactory struct {
 	counter *Counter
 }
 
+// SetName set the Name field
 func (f *GroupCategoryFactory) SetName(i string) *GroupCategoryBuilder {
 	builder := &GroupCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
@@ -151,21 +171,28 @@ func (f *GroupCategoryFactory) SetName(i string) *GroupCategoryBuilder {
 	return builder
 }
 
+// Create return a new *model.GroupCategory
 func (f *GroupCategoryFactory) Create(ctx context.Context) (*model.GroupCategory, error) {
 	builder := &GroupCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new model.GroupCategory
 func (f *GroupCategoryFactory) CreateV(ctx context.Context) (model.GroupCategory, error) {
 	builder := &GroupCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*model.GroupCategory slice
 func (f *GroupCategoryFactory) CreateBatch(ctx context.Context, n int) ([]*model.GroupCategory, error) {
 	builder := &GroupCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []model.GroupCategory slice
 func (f *GroupCategoryFactory) CreateBatchV(ctx context.Context, n int) ([]model.GroupCategory, error) {
 	builder := &GroupCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -181,12 +208,14 @@ type GroupCategoryBuilder struct {
 	nameOverriden bool
 }
 
+// SetName set the Name field
 func (b *GroupCategoryBuilder) SetName(i string) *GroupCategoryBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
 	return b
 }
 
+// CreateV return a new model.GroupCategory
 func (b *GroupCategoryBuilder) CreateV(ctx context.Context) (model.GroupCategory, error) {
 	var d model.GroupCategory
 	p, err := b.Create(ctx)
@@ -196,6 +225,7 @@ func (b *GroupCategoryBuilder) CreateV(ctx context.Context) (model.GroupCategory
 	return d, err
 }
 
+// Create return a new *model.GroupCategory
 func (b *GroupCategoryBuilder) Create(ctx context.Context) (*model.GroupCategory, error) {
 
 	var preSlice = []func(ctx context.Context, i *model.GroupCategory, c int) error{}

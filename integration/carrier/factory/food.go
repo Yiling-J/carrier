@@ -96,34 +96,49 @@ func (*foodMutation) fooFactoryMutateFunc(fn func(ctx context.Context) (model.Fo
 	}
 }
 
+// SetFooSequence register a function which accept a sequence counter and set return value to Foo field
 func (f *FoodMetaFactory) SetFooSequence(fn func(ctx context.Context, i int) (model.Foo, error)) *FoodMetaFactory {
 	f.mutation.fooSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetFooLazy register a function which accept the build struct and set return value to Foo field
 func (f *FoodMetaFactory) SetFooLazy(fn func(ctx context.Context, i *model.Food) (model.Foo, error)) *FoodMetaFactory {
 	f.mutation.fooLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetFooDefault assign a default value to Foo field
 func (f *FoodMetaFactory) SetFooDefault(v model.Foo) *FoodMetaFactory {
 	f.mutation.fooDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetFooFactory register a factory function and assign return value to Foo, you can also use related factory's Create/CreateV as input function here
 func (f *FoodMetaFactory) SetFooFactory(fn func(ctx context.Context) (model.Foo, error)) *FoodMetaFactory {
 	f.mutation.fooFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetFooSequence register a function which accept a sequence counter and set return value to Foo field
 func (t *foodTrait) SetFooSequence(fn func(ctx context.Context, i int) (model.Foo, error)) *foodTrait {
 	t.updates = append(t.updates, t.mutation.fooSequenceMutateFunc(fn))
 	return t
 }
+
+// SetFooLazy register a function which accept the build struct and set return value to Foo field
 func (t *foodTrait) SetFooLazy(fn func(ctx context.Context, i *model.Food) (model.Foo, error)) *foodTrait {
 	t.updates = append(t.updates, t.mutation.fooLazyMutateFunc(fn))
 	return t
 }
+
+// SetFooDefault assign a default value to Foo field
 func (t *foodTrait) SetFooDefault(v model.Foo) *foodTrait {
 	t.updates = append(t.updates, t.mutation.fooDefaultMutateFunc(v))
 	return t
 }
+
+// SetFooFactory register a factory function and assign return value to Foo, you can also use related factory's Create/CreateV as input function here
 func (t *foodTrait) SetFooFactory(fn func(ctx context.Context) (model.Foo, error)) *foodTrait {
 	t.updates = append(t.updates, t.mutation.fooFactoryMutateFunc(fn))
 	return t
@@ -192,48 +207,67 @@ func (*foodMutation) categoryFactoryMutateFunc(fn func(ctx context.Context) (str
 	}
 }
 
+// SetCategorySequence register a function which accept a sequence counter and set return value to Category field
 func (f *FoodMetaFactory) SetCategorySequence(fn func(ctx context.Context, i int) (string, error)) *FoodMetaFactory {
 	f.mutation.categorySequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetCategoryLazy register a function which accept the build struct and set return value to Category field
 func (f *FoodMetaFactory) SetCategoryLazy(fn func(ctx context.Context, i *model.Food) (string, error)) *FoodMetaFactory {
 	f.mutation.categoryLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetCategoryDefault assign a default value to Category field
 func (f *FoodMetaFactory) SetCategoryDefault(v string) *FoodMetaFactory {
 	f.mutation.categoryDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetCategoryFactory register a factory function and assign return value to Category, you can also use related factory's Create/CreateV as input function here
 func (f *FoodMetaFactory) SetCategoryFactory(fn func(ctx context.Context) (string, error)) *FoodMetaFactory {
 	f.mutation.categoryFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetCategorySequence register a function which accept a sequence counter and set return value to Category field
 func (t *foodTrait) SetCategorySequence(fn func(ctx context.Context, i int) (string, error)) *foodTrait {
 	t.updates = append(t.updates, t.mutation.categorySequenceMutateFunc(fn))
 	return t
 }
+
+// SetCategoryLazy register a function which accept the build struct and set return value to Category field
 func (t *foodTrait) SetCategoryLazy(fn func(ctx context.Context, i *model.Food) (string, error)) *foodTrait {
 	t.updates = append(t.updates, t.mutation.categoryLazyMutateFunc(fn))
 	return t
 }
+
+// SetCategoryDefault assign a default value to Category field
 func (t *foodTrait) SetCategoryDefault(v string) *foodTrait {
 	t.updates = append(t.updates, t.mutation.categoryDefaultMutateFunc(v))
 	return t
 }
+
+// SetCategoryFactory register a factory function and assign return value to Category, you can also use related factory's Create/CreateV as input function here
 func (t *foodTrait) SetCategoryFactory(fn func(ctx context.Context) (string, error)) *foodTrait {
 	t.updates = append(t.updates, t.mutation.categoryFactoryMutateFunc(fn))
 	return t
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *FoodMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Food) error) *FoodMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *foodTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Food) error) *foodTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// Build create a  FoodFactory from FoodMetaFactory
 func (f *FoodMetaFactory) Build() *FoodFactory {
 	return &FoodFactory{meta: *f, counter: &Counter{}}
 }
@@ -243,6 +277,7 @@ type FoodFactory struct {
 	counter *Counter
 }
 
+// SetFoo set the Foo field
 func (f *FoodFactory) SetFoo(i model.Foo) *FoodBuilder {
 	builder := &FoodBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetFoo(i)
@@ -250,6 +285,7 @@ func (f *FoodFactory) SetFoo(i model.Foo) *FoodBuilder {
 	return builder
 }
 
+// SetCategory set the Category field
 func (f *FoodFactory) SetCategory(i string) *FoodBuilder {
 	builder := &FoodBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetCategory(i)
@@ -257,21 +293,28 @@ func (f *FoodFactory) SetCategory(i string) *FoodBuilder {
 	return builder
 }
 
+// Create return a new *model.Food
 func (f *FoodFactory) Create(ctx context.Context) (*model.Food, error) {
 	builder := &FoodBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new model.Food
 func (f *FoodFactory) CreateV(ctx context.Context) (model.Food, error) {
 	builder := &FoodBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*model.Food slice
 func (f *FoodFactory) CreateBatch(ctx context.Context, n int) ([]*model.Food, error) {
 	builder := &FoodBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []model.Food slice
 func (f *FoodFactory) CreateBatchV(ctx context.Context, n int) ([]model.Food, error) {
 	builder := &FoodBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -290,18 +333,21 @@ type FoodBuilder struct {
 	categoryOverriden bool
 }
 
+// SetFoo set the Foo field
 func (b *FoodBuilder) SetFoo(i model.Foo) *FoodBuilder {
 	b.fooOverride = i
 	b.fooOverriden = true
 	return b
 }
 
+// SetCategory set the Category field
 func (b *FoodBuilder) SetCategory(i string) *FoodBuilder {
 	b.categoryOverride = i
 	b.categoryOverriden = true
 	return b
 }
 
+// CreateV return a new model.Food
 func (b *FoodBuilder) CreateV(ctx context.Context) (model.Food, error) {
 	var d model.Food
 	p, err := b.Create(ctx)
@@ -311,6 +357,7 @@ func (b *FoodBuilder) CreateV(ctx context.Context) (model.Food, error) {
 	return d, err
 }
 
+// Create return a new *model.Food
 func (b *FoodBuilder) Create(ctx context.Context) (*model.Food, error) {
 
 	var preSlice = []func(ctx context.Context, i *model.Food, c int) error{}
