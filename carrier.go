@@ -92,6 +92,7 @@ type Schema interface {
 	check() bool
 	schemaType() int
 	TraitList() []string
+	EntPkg() string
 }
 
 type StructSchema struct {
@@ -146,6 +147,7 @@ func (s *StructSchema) Fields() []Field {
 }
 func (s *StructSchema) PostFields() []PostField { return s.Posts }
 func (s *StructSchema) TraitList() []string     { return s.Traits }
+func (s *StructSchema) EntPkg() string          { return "" }
 
 type EntCreateInterface interface {
 	Exec(ctx context.Context) error
@@ -157,6 +159,7 @@ type EntSchema struct {
 	rtype  reflect.Type
 	Alias  string
 	Traits []string
+	entPkg string
 }
 
 func (s *EntSchema) schemaType() int { return TypeEnt }
@@ -179,6 +182,8 @@ func (s *EntSchema) check() bool {
 	}
 	out := method.Type.Out(0)
 	s.rtype = out.Elem()
+	tp := strings.Split(v.Type().String(), ".")
+	s.entPkg = tp[0]
 	return true
 }
 func (s *EntSchema) Name() string {
@@ -227,6 +232,7 @@ func (s *EntSchema) Fields() []Field {
 }
 func (s *EntSchema) PostFields() []PostField { return s.Posts }
 func (s *EntSchema) TraitList() []string     { return s.Traits }
+func (s *EntSchema) EntPkg() string          { return s.entPkg }
 
 type PostField struct {
 	Name  string
@@ -247,6 +253,7 @@ type carrierInfo struct {
 	PostFields []Field
 	imports    map[string]string
 	Traits     []string
+	EntPkg     string
 }
 
 type templateVar struct {
@@ -359,6 +366,7 @@ func SchemaToMetaFactory(pkg string, path string, schemas []Schema) error {
 			PostFields: postFields,
 			imports:    importMap,
 			Traits:     traits,
+			EntPkg:     s.EntPkg(),
 		})
 	}
 	// prepare dir
