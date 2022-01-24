@@ -69,7 +69,7 @@ import (
 
 var (
 	Schemas = []carrier.Schema{
-		{
+		&carrier.StructSchema{
 			To: model.User{},
 		},
 	}
@@ -89,7 +89,7 @@ import (
 
 var (
 	Schemas = []carrier.Schema{
-		{
+		&carrier.EntSchema{
 			To: &ent.UserCreate{},
 		},
 	}
@@ -348,4 +348,3 @@ Create slice of struct.
 ## Common Recipes
 - [Recipe Example](examples/recipe/main.go)
 - [Ent Recipe Example](examples/ent_recipe/main.go)
-
