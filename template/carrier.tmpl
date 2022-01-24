@@ -13,6 +13,7 @@ import (
 {{ $SchemaType := .Schema.Type  }}
 {{ $SchemaName := .Schema.Name | printf "%s%s" $Prefix  }}
 {{ $CreatedType := .Schema.Type  }}
+{{ $EntPkg := .Schema.EntPkg }}
 {{if $EntSchema}}
     {{ $SchemaType = $SchemaName | printf "%sMutator" }}
 {{end}}
@@ -29,7 +30,7 @@ import (
     {{range .Fields}}
 	{{$DynamicParams := ""}}
 	{{if $EntSchema}}
-	    {{$DynamicParams = $RawSchemaName | printf "creator *ent.%sCreate"}}
+	    {{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
 	{{end}}
 	{{.Name | FirstLower}}Type int
 	{{.Name | FirstLower}}Func func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error
@@ -60,7 +61,7 @@ import (
     {{range .Fields}}
 	{{$DynamicParams := ""}}
 	{{if $EntSchema}}
-	    {{$DynamicParams = $RawSchemaName | printf "creator *ent.%sCreate"}}
+	    {{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
 	{{end}}
 	func (*{{$SchemaName | FirstLower}}Mutation) {{.Name | FirstLower}}SequenceMutateFunc(fn func(ctx context.Context, i int) ({{.ValueType}}, error)) func(m *{{$SchemaName | FirstLower}}Mutation) {
 	return func(m *{{$SchemaName | FirstLower}}Mutation) {
@@ -215,7 +216,7 @@ import (
     meta    {{$SchemaName}}MetaFactory
     counter *Counter
     {{if $EntSchema}}
-	client *ent.Client
+	client *{{$EntPkg}}.Client
     {{end}}
     }
 
@@ -293,7 +294,7 @@ import (
 
     {{if $EntSchema}}
 	// Client set ent client to {{$SchemaName}}Factory
-	func (f *{{$SchemaName}}Factory) Client(c *ent.Client) *{{$SchemaName}}Factory {
+	func (f *{{$SchemaName}}Factory) Client(c *{{$EntPkg}}.Client) *{{$SchemaName}}Factory {
 	f.client = c
 	return f
 	}
@@ -312,11 +313,11 @@ import (
 	_post{{.Name}}Set bool
     {{end}}
     {{if $EntSchema}}
-	client *ent.Client
+	client *{{$EntPkg}}.Client
     {{end}}
     }
     {{if $EntSchema}}
-	func (b *{{$SchemaName}}Builder) Client(c *ent.Client) *{{$SchemaName}}Builder {
+	func (b *{{$SchemaName}}Builder) Client(c *{{$EntPkg}}.Client) *{{$SchemaName}}Builder {
 	b.client = c
 	return b
 	}
@@ -359,9 +360,9 @@ import (
     // Create return a new *{{$CreatedType}}
     func (b *{{$SchemaName}}Builder) Create(ctx context.Context) (*{{$CreatedType}}, error) {
     {{if $EntSchema}}
-	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *ent.{{.Name}}Create) error{}
-	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *ent.{{.Name}}Create) error{}
-	var postSlice = []func(ctx context.Context, i *{{$CreatedType}}, c int, creator *ent.{{.Name}}Create) error{}
+	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *{{$EntPkg}}.{{.Name}}Create) error{}
+	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *{{$EntPkg}}.{{.Name}}Create) error{}
+	var postSlice = []func(ctx context.Context, i *{{$CreatedType}}, c int, creator *{{$EntPkg}}.{{.Name}}Create) error{}
     {{else}}
 	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
 	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
@@ -378,7 +379,7 @@ import (
     {{range .Fields}}
 	{{$DynamicParams := ""}}
 	{{if $EntSchema}}
-	    {{$DynamicParams = $RawSchemaName | printf "creator *ent.%sCreate"}}
+	    {{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
 	{{end}}
 	if b.{{.Name | FirstLower}}Overriden {
 	preSlice = append(preSlice, func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
@@ -405,7 +406,7 @@ import (
     {{range .PostFields}}
 	{{$DynamicParams := ""}}
 	{{if $EntSchema}}
-	    {{$DynamicParams = $RawSchemaName | printf "creator *ent.%sCreate"}}
+	    {{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
 	{{end}}
 	if b.mutation._post{{.Name}}Func != nil {
 	postSlice = append(postSlice, func(ctx context.Context, i *{{$CreatedType}}, c int, {{$DynamicParams}}) error {

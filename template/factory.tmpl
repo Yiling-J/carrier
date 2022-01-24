@@ -36,19 +36,21 @@ return &Factory{}
 {{end}}
 
 {{if .EntSchemas}}
+    {{ $EntPkg := "" }}
     // EntFactory is ent factory wrapper
     type EntFactory struct {
     {{range .EntSchemas}}
+        {{ $EntPkg = .EntPkg }}
 	{{.Name | FirstLower}}Factory *factory.Ent{{.Name}}Factory
     {{end}}
-    client *ent.Client
+    client *{{$EntPkg}}.Client
     }
     // NewEntFactory return a new ent factory wrapper
-    func NewEntFactory(client *ent.Client) *EntFactory {
+    func NewEntFactory(client *{{$EntPkg}}.Client) *EntFactory {
     return &EntFactory{client: client}
     }
     // Client return wrappper's ent client
-    func (f *EntFactory) Client() *ent.Client {
+    func (f *EntFactory) Client() *{{$EntPkg}}.Client {
     return f.client
     }
 
