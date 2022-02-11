@@ -14,7 +14,8 @@ type foodMutation struct {
 	categoryType int
 	categoryFunc func(ctx context.Context, i *model.Food, c int) error
 
-	afterCreateFunc func(ctx context.Context, i *model.Food) error
+	beforeCreateFunc func(ctx context.Context) error
+	afterCreateFunc  func(ctx context.Context, i *model.Food) error
 }
 type FoodMetaFactory struct {
 	mutation foodMutation
@@ -261,6 +262,12 @@ func (f *FoodMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *mod
 	return f
 }
 
+// SetBeforeCreateFunc register a function to be called after struct create
+func (f *FoodMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error) *FoodMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *foodTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Food) error) *foodTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
@@ -425,6 +432,11 @@ func (b *FoodBuilder) Create(ctx context.Context) (*model.Food, error) {
 		}
 	}
 
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx); err != nil {
+			return nil, err
+		}
+	}
 	new := v
 
 	if b.mutation.afterCreateFunc != nil {

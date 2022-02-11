@@ -15,7 +15,8 @@ type entGroupMutation struct {
 	nameType int
 	nameFunc func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error
 
-	afterCreateFunc func(ctx context.Context, i *ent.Group) error
+	beforeCreateFunc func(ctx context.Context, creator *ent.GroupCreate) error
+	afterCreateFunc  func(ctx context.Context, i *ent.Group) error
 }
 type EntGroupMetaFactory struct {
 	mutation entGroupMutation
@@ -164,6 +165,12 @@ func (f *EntGroupMetaFactory) SetNouserTrait(t *entGroupTrait) *EntGroupMetaFact
 // SetAfterCreateFunc register a function to be called after struct create
 func (f *EntGroupMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Group) error) *EntGroupMetaFactory {
 	f.mutation.afterCreateFunc = fn
+	return f
+}
+
+// SetBeforeCreateFunc register a function to be called after struct create
+func (f *EntGroupMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, creator *ent.GroupCreate) error) *EntGroupMetaFactory {
+	f.mutation.beforeCreateFunc = fn
 	return f
 }
 
@@ -350,6 +357,11 @@ func (b *EntGroupBuilder) Create(ctx context.Context) (*ent.Group, error) {
 		}
 	}
 
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, entBuilder); err != nil {
+			return nil, err
+		}
+	}
 	new, err := entBuilder.Save(ctx)
 	if err != nil {
 		return nil, err

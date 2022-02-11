@@ -11,7 +11,8 @@ type groupCategoryMutation struct {
 	nameType int
 	nameFunc func(ctx context.Context, i *model.GroupCategory, c int) error
 
-	afterCreateFunc func(ctx context.Context, i *model.GroupCategory) error
+	beforeCreateFunc func(ctx context.Context) error
+	afterCreateFunc  func(ctx context.Context, i *model.GroupCategory) error
 }
 type GroupCategoryMetaFactory struct {
 	mutation groupCategoryMutation
@@ -147,6 +148,12 @@ func (f *GroupCategoryMetaFactory) SetAfterCreateFunc(fn func(ctx context.Contex
 	return f
 }
 
+// SetBeforeCreateFunc register a function to be called after struct create
+func (f *GroupCategoryMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error) *GroupCategoryMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *groupCategoryTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.GroupCategory) error) *groupCategoryTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
@@ -273,6 +280,11 @@ func (b *GroupCategoryBuilder) Create(ctx context.Context) (*model.GroupCategory
 		}
 	}
 
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx); err != nil {
+			return nil, err
+		}
+	}
 	new := v
 
 	if b.mutation.afterCreateFunc != nil {

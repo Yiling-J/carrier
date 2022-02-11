@@ -38,6 +38,11 @@ import (
     {{range .PostFields}}
 	_post{{.Name}}Func func(ctx context.Context, set bool, obj *{{$CreatedType}}, i {{.ValueType}}) error
     {{end}}
+	{{$DynamicParams := ""}}
+	{{if $EntSchema}}
+		{{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
+	{{end}}
+	beforeCreateFunc func(ctx context.Context, {{$DynamicParams}}) error
     afterCreateFunc func(ctx context.Context, i *{{$CreatedType}}) error
     }
     type {{$SchemaName}}MetaFactory struct {
@@ -200,6 +205,11 @@ import (
     // SetAfterCreateFunc register a function to be called after struct create
     func (f *{{$SchemaName}}MetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *{{$CreatedType}}) error) *{{$SchemaName}}MetaFactory {
     f.mutation.afterCreateFunc = fn
+    return f
+    }
+    // SetBeforeCreateFunc register a function to be called after struct create
+    func (f *{{$SchemaName}}MetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, {{$DynamicParams}}) error) *{{$SchemaName}}MetaFactory {
+    f.mutation.beforeCreateFunc = fn
     return f
     }
     // SetAfterCreateFunc register a function to be called after struct create
@@ -438,11 +448,21 @@ import (
     }
     }
     {{if $EntSchema}}
+	if b.mutation.beforeCreateFunc != nil {
+	if err := b.mutation.beforeCreateFunc(ctx, entBuilder); err != nil {
+	return nil, err
+	}
+	}
 	new, err := entBuilder.Save(ctx)
 	if err != nil {
 	return nil, err
 	}
     {{else}}
+	if b.mutation.beforeCreateFunc != nil {
+	if err := b.mutation.beforeCreateFunc(ctx); err != nil {
+	return nil, err
+	}
+	}
 	new := v
     {{end}}
     if b.mutation.afterCreateFunc != nil {

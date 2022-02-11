@@ -3,6 +3,7 @@ package integration
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"sync"
 	"testing"
 	"time"
@@ -61,6 +62,10 @@ func getStructFactory() *carrier.Factory {
 		SetMixnameTrait(factory.UserTrait().SetNameDefault("mix_name")).
 		SetMixemailTrait(factory.UserTrait().SetEmailDefault("mix_email").SetAfterCreateFunc(nil)).
 		SetMixtitleTrait(factory.UserTrait().SetTitleDefault("mix_title")).
+		SetBeforeCreateFunc(func(ctx context.Context) error {
+			// do nothing
+			return nil
+		}).
 		SetAfterCreateFunc(func(ctx context.Context, i *model.User) error {
 			i.Email = i.Email + ".com"
 			return nil
@@ -91,6 +96,17 @@ func getEntFactory() (*carrier.EntFactory, error) {
 			return fmt.Sprintf("group%d", i), nil
 		},
 	).
+		SetBeforeCreateFunc(func(ctx context.Context, creator *ent.GroupCreate) error {
+			user, err := client.User.Create().
+				SetAge(int(rand.Uint32())).
+				SetName("group-user").
+				Save(ctx)
+			if err != nil {
+				return err
+			}
+			creator.AddUsers(user)
+			return nil
+		}).
 		SetAfterCreateFunc(func(ctx context.Context, i *ent.Group) error {
 			user, err := entFactory.UserFactory().SetGroupsPost(0).Create(ctx)
 			if err != nil {
@@ -280,7 +296,19 @@ func TestCreateEntBatch(t *testing.T) {
 	for _, user := range users {
 		names = append(names, user.Name)
 	}
-	require.Equal(t, []string{"user-1", "user-2", "user-3", "user-4", "user-5"}, names)
+	wantNames := []string{
+		"user-1",
+		"group-user",
+		"user-2",
+		"group-user",
+		"user-3",
+		"group-user",
+		"user-4",
+		"group-user",
+		"user-5",
+		"group-user",
+	}
+	require.Equal(t, wantNames, names)
 }
 
 func TestCreateBatchV(t *testing.T) {
@@ -339,7 +367,7 @@ func TestEntBasic(t *testing.T) {
 	owner, err := car.QueryOwner().First(ctx)
 	require.Nil(t, err)
 	require.Equal(t, "user-2", owner.Name)
-	require.Equal(t, owner.ID, 2)
+	require.Equal(t, owner.ID, 3)
 	// post default
 	groups, err := user.QueryGroups().All(ctx)
 	require.Nil(t, err)
@@ -347,7 +375,7 @@ func TestEntBasic(t *testing.T) {
 	for _, g := range groups {
 		c, err := g.QueryUsers().Count(ctx)
 		require.Nil(t, err)
-		require.Equal(t, 1, c)
+		require.Equal(t, 2, c)
 	}
 	// post set
 	user2, err := f.UserFactory().SetGroupsPost(3).Create(ctx)
@@ -358,14 +386,14 @@ func TestEntBasic(t *testing.T) {
 	for _, g := range groups {
 		c, err := g.QueryUsers().Count(ctx)
 		require.Nil(t, err)
-		require.Equal(t, 1, c)
+		require.Equal(t, 2, c)
 	}
 	// group default user
 	group, err := f.GroupFactory().Create(ctx)
 	require.Nil(t, err)
 	c, err := group.QueryUsers().Count(ctx)
 	require.Nil(t, err)
-	require.Equal(t, 1, c)
+	require.Equal(t, 2, c)
 	// total group count 6, user:1 + car.owner:1 + user2:3 + group:1
 	total, err := f.Client().Group.Query().Count(ctx)
 	require.Nil(t, err)

@@ -11,7 +11,8 @@ type barMutation struct {
 	nameType int
 	nameFunc func(ctx context.Context, i *model.Foo, c int) error
 
-	afterCreateFunc func(ctx context.Context, i *model.Foo) error
+	beforeCreateFunc func(ctx context.Context) error
+	afterCreateFunc  func(ctx context.Context, i *model.Foo) error
 }
 type BarMetaFactory struct {
 	mutation barMutation
@@ -147,6 +148,12 @@ func (f *BarMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *mode
 	return f
 }
 
+// SetBeforeCreateFunc register a function to be called after struct create
+func (f *BarMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error) *BarMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *barTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Foo) error) *barTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
@@ -273,6 +280,11 @@ func (b *BarBuilder) Create(ctx context.Context) (*model.Foo, error) {
 		}
 	}
 
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx); err != nil {
+			return nil, err
+		}
+	}
 	new := v
 
 	if b.mutation.afterCreateFunc != nil {

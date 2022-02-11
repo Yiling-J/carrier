@@ -32,7 +32,8 @@ type entCarMutation struct {
 	registeredAtType int
 	registeredAtFunc func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error
 
-	afterCreateFunc func(ctx context.Context, i *ent.Car) error
+	beforeCreateFunc func(ctx context.Context, creator *ent.CarCreate) error
+	afterCreateFunc  func(ctx context.Context, i *ent.Car) error
 }
 type EntCarMetaFactory struct {
 	mutation entCarMutation
@@ -533,6 +534,12 @@ func (f *EntCarMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *e
 	return f
 }
 
+// SetBeforeCreateFunc register a function to be called after struct create
+func (f *EntCarMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, creator *ent.CarCreate) error) *EntCarMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *entCarTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Car) error) *entCarTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
@@ -815,6 +822,11 @@ func (b *EntCarBuilder) Create(ctx context.Context) (*ent.Car, error) {
 		}
 	}
 
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, entBuilder); err != nil {
+			return nil, err
+		}
+	}
 	new, err := entBuilder.Save(ctx)
 	if err != nil {
 		return nil, err

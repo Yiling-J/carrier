@@ -22,7 +22,8 @@ type userMutation struct {
 
 	_postFooFunc func(ctx context.Context, set bool, obj *model.User, i string) error
 
-	afterCreateFunc func(ctx context.Context, i *model.User) error
+	beforeCreateFunc func(ctx context.Context) error
+	afterCreateFunc  func(ctx context.Context, i *model.User) error
 }
 type UserMetaFactory struct {
 	mutation userMutation
@@ -579,6 +580,12 @@ func (f *UserMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *mod
 	return f
 }
 
+// SetBeforeCreateFunc register a function to be called after struct create
+func (f *UserMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error) *UserMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *userTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.User) error) *userTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
@@ -1069,6 +1076,11 @@ func (b *UserBuilder) Create(ctx context.Context) (*model.User, error) {
 		}
 	}
 
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx); err != nil {
+			return nil, err
+		}
+	}
 	new := v
 
 	if b.mutation.afterCreateFunc != nil {
