@@ -207,7 +207,7 @@ import (
     f.mutation.afterCreateFunc = fn
     return f
     }
-    // SetBeforeCreateFunc register a function to be called after struct create
+    // SetBeforeCreateFunc register a function to be called before struct create
     func (f *{{$SchemaName}}MetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, {{$DynamicParams}}) error) *{{$SchemaName}}MetaFactory {
     f.mutation.beforeCreateFunc = fn
     return f
