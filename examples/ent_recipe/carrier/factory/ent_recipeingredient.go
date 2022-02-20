@@ -15,22 +15,29 @@ type EntRecipeIngredientMutator struct {
 	Quantity float32
 
 	Unit string
+
+	_creator *ent.RecipeIngredientCreate
+}
+
+func (m *EntRecipeIngredientMutator) EntCreator() *ent.RecipeIngredientCreate {
+	return m._creator
 }
 
 type entRecipeIngredientMutation struct {
 	ingredientType int
-	ingredientFunc func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error
+	ingredientFunc func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error
 
 	ingredientIDType int
-	ingredientIDFunc func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error
+	ingredientIDFunc func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error
 
 	quantityType int
-	quantityFunc func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error
+	quantityFunc func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error
 
 	unitType int
-	unitFunc func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error
+	unitFunc func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error
 
-	afterCreateFunc func(ctx context.Context, i *ent.RecipeIngredient) error
+	beforeCreateFunc func(ctx context.Context, i *EntRecipeIngredientMutator) error
+	afterCreateFunc  func(ctx context.Context, i *ent.RecipeIngredient) error
 }
 type EntRecipeIngredientMetaFactory struct {
 	mutation entRecipeIngredientMutation
@@ -43,6 +50,11 @@ type entRecipeIngredientTrait struct {
 func EntRecipeIngredientTrait() *entRecipeIngredientTrait {
 	return &entRecipeIngredientTrait{}
 }
+func (*entRecipeIngredientMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *EntRecipeIngredientMutator) error) func(m *entRecipeIngredientMutation) {
+	return func(m *entRecipeIngredientMutation) {
+		m.beforeCreateFunc = fn
+	}
+}
 func (*entRecipeIngredientMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *ent.RecipeIngredient) error) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.afterCreateFunc = fn
@@ -52,7 +64,7 @@ func (*entRecipeIngredientMutation) afterCreateMutateFunc(fn func(ctx context.Co
 func (*entRecipeIngredientMutation) ingredientSequenceMutateFunc(fn func(ctx context.Context, i int) (*ent.Ingredient, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.ingredientType = TypeSequence
-		m.ingredientFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.ingredientFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -61,7 +73,7 @@ func (*entRecipeIngredientMutation) ingredientSequenceMutateFunc(fn func(ctx con
 				return err
 			}
 
-			creator.SetIngredient(value)
+			i.EntCreator().SetIngredient(value)
 
 			i.Ingredient = value
 			return nil
@@ -71,7 +83,7 @@ func (*entRecipeIngredientMutation) ingredientSequenceMutateFunc(fn func(ctx con
 func (*entRecipeIngredientMutation) ingredientLazyMutateFunc(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (*ent.Ingredient, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.ingredientType = TypeLazy
-		m.ingredientFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.ingredientFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -80,7 +92,7 @@ func (*entRecipeIngredientMutation) ingredientLazyMutateFunc(fn func(ctx context
 				return err
 			}
 
-			creator.SetIngredient(value)
+			i.EntCreator().SetIngredient(value)
 
 			i.Ingredient = value
 			return nil
@@ -90,9 +102,9 @@ func (*entRecipeIngredientMutation) ingredientLazyMutateFunc(fn func(ctx context
 func (*entRecipeIngredientMutation) ingredientDefaultMutateFunc(v *ent.Ingredient) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.ingredientType = TypeDefault
-		m.ingredientFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.ingredientFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 
-			creator.SetIngredient(v)
+			i.EntCreator().SetIngredient(v)
 
 			i.Ingredient = v
 			return nil
@@ -102,7 +114,7 @@ func (*entRecipeIngredientMutation) ingredientDefaultMutateFunc(v *ent.Ingredien
 func (*entRecipeIngredientMutation) ingredientFactoryMutateFunc(fn func(ctx context.Context) (*ent.Ingredient, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.ingredientType = TypeFactory
-		m.ingredientFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.ingredientFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -111,7 +123,7 @@ func (*entRecipeIngredientMutation) ingredientFactoryMutateFunc(fn func(ctx cont
 				return err
 			}
 
-			creator.SetIngredient(value)
+			i.EntCreator().SetIngredient(value)
 
 			i.Ingredient = value
 
@@ -120,34 +132,49 @@ func (*entRecipeIngredientMutation) ingredientFactoryMutateFunc(fn func(ctx cont
 	}
 }
 
+// SetIngredientSequence register a function which accept a sequence counter and set return value to Ingredient field
 func (f *EntRecipeIngredientMetaFactory) SetIngredientSequence(fn func(ctx context.Context, i int) (*ent.Ingredient, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.ingredientSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientLazy register a function which accept the build struct and set return value to Ingredient field
 func (f *EntRecipeIngredientMetaFactory) SetIngredientLazy(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (*ent.Ingredient, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.ingredientLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientDefault assign a default value to Ingredient field
 func (f *EntRecipeIngredientMetaFactory) SetIngredientDefault(v *ent.Ingredient) *EntRecipeIngredientMetaFactory {
 	f.mutation.ingredientDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetIngredientFactory register a factory function and assign return value to Ingredient, you can also use related factory's Create/CreateV as input function here
 func (f *EntRecipeIngredientMetaFactory) SetIngredientFactory(fn func(ctx context.Context) (*ent.Ingredient, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.ingredientFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientSequence register a function which accept a sequence counter and set return value to Ingredient field
 func (t *entRecipeIngredientTrait) SetIngredientSequence(fn func(ctx context.Context, i int) (*ent.Ingredient, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientSequenceMutateFunc(fn))
 	return t
 }
+
+// SetIngredientLazy register a function which accept the build struct and set return value to Ingredient field
 func (t *entRecipeIngredientTrait) SetIngredientLazy(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (*ent.Ingredient, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientLazyMutateFunc(fn))
 	return t
 }
+
+// SetIngredientDefault assign a default value to Ingredient field
 func (t *entRecipeIngredientTrait) SetIngredientDefault(v *ent.Ingredient) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientDefaultMutateFunc(v))
 	return t
 }
+
+// SetIngredientFactory register a factory function and assign return value to Ingredient, you can also use related factory's Create/CreateV as input function here
 func (t *entRecipeIngredientTrait) SetIngredientFactory(fn func(ctx context.Context) (*ent.Ingredient, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientFactoryMutateFunc(fn))
 	return t
@@ -156,7 +183,7 @@ func (t *entRecipeIngredientTrait) SetIngredientFactory(fn func(ctx context.Cont
 func (*entRecipeIngredientMutation) ingredientIDSequenceMutateFunc(fn func(ctx context.Context, i int) (int, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.ingredientIDType = TypeSequence
-		m.ingredientIDFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.ingredientIDFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -165,7 +192,7 @@ func (*entRecipeIngredientMutation) ingredientIDSequenceMutateFunc(fn func(ctx c
 				return err
 			}
 
-			creator.SetIngredientID(value)
+			i.EntCreator().SetIngredientID(value)
 
 			i.IngredientID = value
 			return nil
@@ -175,7 +202,7 @@ func (*entRecipeIngredientMutation) ingredientIDSequenceMutateFunc(fn func(ctx c
 func (*entRecipeIngredientMutation) ingredientIDLazyMutateFunc(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (int, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.ingredientIDType = TypeLazy
-		m.ingredientIDFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.ingredientIDFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -184,7 +211,7 @@ func (*entRecipeIngredientMutation) ingredientIDLazyMutateFunc(fn func(ctx conte
 				return err
 			}
 
-			creator.SetIngredientID(value)
+			i.EntCreator().SetIngredientID(value)
 
 			i.IngredientID = value
 			return nil
@@ -194,9 +221,9 @@ func (*entRecipeIngredientMutation) ingredientIDLazyMutateFunc(fn func(ctx conte
 func (*entRecipeIngredientMutation) ingredientIDDefaultMutateFunc(v int) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.ingredientIDType = TypeDefault
-		m.ingredientIDFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.ingredientIDFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 
-			creator.SetIngredientID(v)
+			i.EntCreator().SetIngredientID(v)
 
 			i.IngredientID = v
 			return nil
@@ -206,7 +233,7 @@ func (*entRecipeIngredientMutation) ingredientIDDefaultMutateFunc(v int) func(m 
 func (*entRecipeIngredientMutation) ingredientIDFactoryMutateFunc(fn func(ctx context.Context) (int, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.ingredientIDType = TypeFactory
-		m.ingredientIDFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.ingredientIDFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -215,7 +242,7 @@ func (*entRecipeIngredientMutation) ingredientIDFactoryMutateFunc(fn func(ctx co
 				return err
 			}
 
-			creator.SetIngredientID(value)
+			i.EntCreator().SetIngredientID(value)
 
 			i.IngredientID = value
 
@@ -224,34 +251,49 @@ func (*entRecipeIngredientMutation) ingredientIDFactoryMutateFunc(fn func(ctx co
 	}
 }
 
+// SetIngredientIDSequence register a function which accept a sequence counter and set return value to IngredientID field
 func (f *EntRecipeIngredientMetaFactory) SetIngredientIDSequence(fn func(ctx context.Context, i int) (int, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.ingredientIDSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientIDLazy register a function which accept the build struct and set return value to IngredientID field
 func (f *EntRecipeIngredientMetaFactory) SetIngredientIDLazy(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (int, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.ingredientIDLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientIDDefault assign a default value to IngredientID field
 func (f *EntRecipeIngredientMetaFactory) SetIngredientIDDefault(v int) *EntRecipeIngredientMetaFactory {
 	f.mutation.ingredientIDDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetIngredientIDFactory register a factory function and assign return value to IngredientID, you can also use related factory's Create/CreateV as input function here
 func (f *EntRecipeIngredientMetaFactory) SetIngredientIDFactory(fn func(ctx context.Context) (int, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.ingredientIDFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientIDSequence register a function which accept a sequence counter and set return value to IngredientID field
 func (t *entRecipeIngredientTrait) SetIngredientIDSequence(fn func(ctx context.Context, i int) (int, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientIDSequenceMutateFunc(fn))
 	return t
 }
+
+// SetIngredientIDLazy register a function which accept the build struct and set return value to IngredientID field
 func (t *entRecipeIngredientTrait) SetIngredientIDLazy(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (int, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientIDLazyMutateFunc(fn))
 	return t
 }
+
+// SetIngredientIDDefault assign a default value to IngredientID field
 func (t *entRecipeIngredientTrait) SetIngredientIDDefault(v int) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientIDDefaultMutateFunc(v))
 	return t
 }
+
+// SetIngredientIDFactory register a factory function and assign return value to IngredientID, you can also use related factory's Create/CreateV as input function here
 func (t *entRecipeIngredientTrait) SetIngredientIDFactory(fn func(ctx context.Context) (int, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientIDFactoryMutateFunc(fn))
 	return t
@@ -260,7 +302,7 @@ func (t *entRecipeIngredientTrait) SetIngredientIDFactory(fn func(ctx context.Co
 func (*entRecipeIngredientMutation) quantitySequenceMutateFunc(fn func(ctx context.Context, i int) (float32, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.quantityType = TypeSequence
-		m.quantityFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.quantityFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -269,7 +311,7 @@ func (*entRecipeIngredientMutation) quantitySequenceMutateFunc(fn func(ctx conte
 				return err
 			}
 
-			creator.SetQuantity(value)
+			i.EntCreator().SetQuantity(value)
 
 			i.Quantity = value
 			return nil
@@ -279,7 +321,7 @@ func (*entRecipeIngredientMutation) quantitySequenceMutateFunc(fn func(ctx conte
 func (*entRecipeIngredientMutation) quantityLazyMutateFunc(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (float32, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.quantityType = TypeLazy
-		m.quantityFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.quantityFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -288,7 +330,7 @@ func (*entRecipeIngredientMutation) quantityLazyMutateFunc(fn func(ctx context.C
 				return err
 			}
 
-			creator.SetQuantity(value)
+			i.EntCreator().SetQuantity(value)
 
 			i.Quantity = value
 			return nil
@@ -298,9 +340,9 @@ func (*entRecipeIngredientMutation) quantityLazyMutateFunc(fn func(ctx context.C
 func (*entRecipeIngredientMutation) quantityDefaultMutateFunc(v float32) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.quantityType = TypeDefault
-		m.quantityFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.quantityFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 
-			creator.SetQuantity(v)
+			i.EntCreator().SetQuantity(v)
 
 			i.Quantity = v
 			return nil
@@ -310,7 +352,7 @@ func (*entRecipeIngredientMutation) quantityDefaultMutateFunc(v float32) func(m 
 func (*entRecipeIngredientMutation) quantityFactoryMutateFunc(fn func(ctx context.Context) (float32, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.quantityType = TypeFactory
-		m.quantityFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.quantityFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -319,7 +361,7 @@ func (*entRecipeIngredientMutation) quantityFactoryMutateFunc(fn func(ctx contex
 				return err
 			}
 
-			creator.SetQuantity(value)
+			i.EntCreator().SetQuantity(value)
 
 			i.Quantity = value
 
@@ -328,34 +370,49 @@ func (*entRecipeIngredientMutation) quantityFactoryMutateFunc(fn func(ctx contex
 	}
 }
 
+// SetQuantitySequence register a function which accept a sequence counter and set return value to Quantity field
 func (f *EntRecipeIngredientMetaFactory) SetQuantitySequence(fn func(ctx context.Context, i int) (float32, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.quantitySequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetQuantityLazy register a function which accept the build struct and set return value to Quantity field
 func (f *EntRecipeIngredientMetaFactory) SetQuantityLazy(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (float32, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.quantityLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetQuantityDefault assign a default value to Quantity field
 func (f *EntRecipeIngredientMetaFactory) SetQuantityDefault(v float32) *EntRecipeIngredientMetaFactory {
 	f.mutation.quantityDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetQuantityFactory register a factory function and assign return value to Quantity, you can also use related factory's Create/CreateV as input function here
 func (f *EntRecipeIngredientMetaFactory) SetQuantityFactory(fn func(ctx context.Context) (float32, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.quantityFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetQuantitySequence register a function which accept a sequence counter and set return value to Quantity field
 func (t *entRecipeIngredientTrait) SetQuantitySequence(fn func(ctx context.Context, i int) (float32, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.quantitySequenceMutateFunc(fn))
 	return t
 }
+
+// SetQuantityLazy register a function which accept the build struct and set return value to Quantity field
 func (t *entRecipeIngredientTrait) SetQuantityLazy(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (float32, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.quantityLazyMutateFunc(fn))
 	return t
 }
+
+// SetQuantityDefault assign a default value to Quantity field
 func (t *entRecipeIngredientTrait) SetQuantityDefault(v float32) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.quantityDefaultMutateFunc(v))
 	return t
 }
+
+// SetQuantityFactory register a factory function and assign return value to Quantity, you can also use related factory's Create/CreateV as input function here
 func (t *entRecipeIngredientTrait) SetQuantityFactory(fn func(ctx context.Context) (float32, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.quantityFactoryMutateFunc(fn))
 	return t
@@ -364,7 +421,7 @@ func (t *entRecipeIngredientTrait) SetQuantityFactory(fn func(ctx context.Contex
 func (*entRecipeIngredientMutation) unitSequenceMutateFunc(fn func(ctx context.Context, i int) (string, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.unitType = TypeSequence
-		m.unitFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.unitFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -373,7 +430,7 @@ func (*entRecipeIngredientMutation) unitSequenceMutateFunc(fn func(ctx context.C
 				return err
 			}
 
-			creator.SetUnit(value)
+			i.EntCreator().SetUnit(value)
 
 			i.Unit = value
 			return nil
@@ -383,7 +440,7 @@ func (*entRecipeIngredientMutation) unitSequenceMutateFunc(fn func(ctx context.C
 func (*entRecipeIngredientMutation) unitLazyMutateFunc(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (string, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.unitType = TypeLazy
-		m.unitFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.unitFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -392,7 +449,7 @@ func (*entRecipeIngredientMutation) unitLazyMutateFunc(fn func(ctx context.Conte
 				return err
 			}
 
-			creator.SetUnit(value)
+			i.EntCreator().SetUnit(value)
 
 			i.Unit = value
 			return nil
@@ -402,9 +459,9 @@ func (*entRecipeIngredientMutation) unitLazyMutateFunc(fn func(ctx context.Conte
 func (*entRecipeIngredientMutation) unitDefaultMutateFunc(v string) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.unitType = TypeDefault
-		m.unitFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.unitFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 
-			creator.SetUnit(v)
+			i.EntCreator().SetUnit(v)
 
 			i.Unit = v
 			return nil
@@ -414,7 +471,7 @@ func (*entRecipeIngredientMutation) unitDefaultMutateFunc(v string) func(m *entR
 func (*entRecipeIngredientMutation) unitFactoryMutateFunc(fn func(ctx context.Context) (string, error)) func(m *entRecipeIngredientMutation) {
 	return func(m *entRecipeIngredientMutation) {
 		m.unitType = TypeFactory
-		m.unitFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		m.unitFunc = func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -423,7 +480,7 @@ func (*entRecipeIngredientMutation) unitFactoryMutateFunc(fn func(ctx context.Co
 				return err
 			}
 
-			creator.SetUnit(value)
+			i.EntCreator().SetUnit(value)
 
 			i.Unit = value
 
@@ -432,48 +489,79 @@ func (*entRecipeIngredientMutation) unitFactoryMutateFunc(fn func(ctx context.Co
 	}
 }
 
+// SetUnitSequence register a function which accept a sequence counter and set return value to Unit field
 func (f *EntRecipeIngredientMetaFactory) SetUnitSequence(fn func(ctx context.Context, i int) (string, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.unitSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetUnitLazy register a function which accept the build struct and set return value to Unit field
 func (f *EntRecipeIngredientMetaFactory) SetUnitLazy(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (string, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.unitLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetUnitDefault assign a default value to Unit field
 func (f *EntRecipeIngredientMetaFactory) SetUnitDefault(v string) *EntRecipeIngredientMetaFactory {
 	f.mutation.unitDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetUnitFactory register a factory function and assign return value to Unit, you can also use related factory's Create/CreateV as input function here
 func (f *EntRecipeIngredientMetaFactory) SetUnitFactory(fn func(ctx context.Context) (string, error)) *EntRecipeIngredientMetaFactory {
 	f.mutation.unitFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetUnitSequence register a function which accept a sequence counter and set return value to Unit field
 func (t *entRecipeIngredientTrait) SetUnitSequence(fn func(ctx context.Context, i int) (string, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.unitSequenceMutateFunc(fn))
 	return t
 }
+
+// SetUnitLazy register a function which accept the build struct and set return value to Unit field
 func (t *entRecipeIngredientTrait) SetUnitLazy(fn func(ctx context.Context, i *EntRecipeIngredientMutator) (string, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.unitLazyMutateFunc(fn))
 	return t
 }
+
+// SetUnitDefault assign a default value to Unit field
 func (t *entRecipeIngredientTrait) SetUnitDefault(v string) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.unitDefaultMutateFunc(v))
 	return t
 }
+
+// SetUnitFactory register a factory function and assign return value to Unit, you can also use related factory's Create/CreateV as input function here
 func (t *entRecipeIngredientTrait) SetUnitFactory(fn func(ctx context.Context) (string, error)) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.unitFactoryMutateFunc(fn))
 	return t
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *EntRecipeIngredientMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.RecipeIngredient) error) *EntRecipeIngredientMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *EntRecipeIngredientMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *EntRecipeIngredientMutator) error) *EntRecipeIngredientMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *entRecipeIngredientTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.RecipeIngredient) error) *entRecipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *entRecipeIngredientTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *EntRecipeIngredientMutator) error) *entRecipeIngredientTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
+	return t
+}
+
+// Build create a  EntRecipeIngredientFactory from EntRecipeIngredientMetaFactory
 func (f *EntRecipeIngredientMetaFactory) Build() *EntRecipeIngredientFactory {
 	return &EntRecipeIngredientFactory{meta: *f, counter: &Counter{}}
 }
@@ -485,6 +573,7 @@ type EntRecipeIngredientFactory struct {
 	client *ent.Client
 }
 
+// SetIngredient set the Ingredient field
 func (f *EntRecipeIngredientFactory) SetIngredient(i *ent.Ingredient) *EntRecipeIngredientBuilder {
 	builder := &EntRecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetIngredient(i)
@@ -494,6 +583,7 @@ func (f *EntRecipeIngredientFactory) SetIngredient(i *ent.Ingredient) *EntRecipe
 	return builder
 }
 
+// SetIngredientID set the IngredientID field
 func (f *EntRecipeIngredientFactory) SetIngredientID(i int) *EntRecipeIngredientBuilder {
 	builder := &EntRecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetIngredientID(i)
@@ -503,6 +593,7 @@ func (f *EntRecipeIngredientFactory) SetIngredientID(i int) *EntRecipeIngredient
 	return builder
 }
 
+// SetQuantity set the Quantity field
 func (f *EntRecipeIngredientFactory) SetQuantity(i float32) *EntRecipeIngredientBuilder {
 	builder := &EntRecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetQuantity(i)
@@ -512,6 +603,7 @@ func (f *EntRecipeIngredientFactory) SetQuantity(i float32) *EntRecipeIngredient
 	return builder
 }
 
+// SetUnit set the Unit field
 func (f *EntRecipeIngredientFactory) SetUnit(i string) *EntRecipeIngredientBuilder {
 	builder := &EntRecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetUnit(i)
@@ -521,6 +613,7 @@ func (f *EntRecipeIngredientFactory) SetUnit(i string) *EntRecipeIngredientBuild
 	return builder
 }
 
+// Create return a new *ent.RecipeIngredient
 func (f *EntRecipeIngredientFactory) Create(ctx context.Context) (*ent.RecipeIngredient, error) {
 	builder := &EntRecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -528,6 +621,8 @@ func (f *EntRecipeIngredientFactory) Create(ctx context.Context) (*ent.RecipeIng
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new ent.RecipeIngredient
 func (f *EntRecipeIngredientFactory) CreateV(ctx context.Context) (ent.RecipeIngredient, error) {
 	builder := &EntRecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -535,6 +630,8 @@ func (f *EntRecipeIngredientFactory) CreateV(ctx context.Context) (ent.RecipeIng
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*ent.RecipeIngredient slice
 func (f *EntRecipeIngredientFactory) CreateBatch(ctx context.Context, n int) ([]*ent.RecipeIngredient, error) {
 	builder := &EntRecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -542,6 +639,8 @@ func (f *EntRecipeIngredientFactory) CreateBatch(ctx context.Context, n int) ([]
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []ent.RecipeIngredient slice
 func (f *EntRecipeIngredientFactory) CreateBatchV(ctx context.Context, n int) ([]ent.RecipeIngredient, error) {
 	builder := &EntRecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -550,6 +649,7 @@ func (f *EntRecipeIngredientFactory) CreateBatchV(ctx context.Context, n int) ([
 	return builder.CreateBatchV(ctx, n)
 }
 
+// Client set ent client to EntRecipeIngredientFactory
 func (f *EntRecipeIngredientFactory) Client(c *ent.Client) *EntRecipeIngredientFactory {
 	f.client = c
 	return f
@@ -580,30 +680,35 @@ func (b *EntRecipeIngredientBuilder) Client(c *ent.Client) *EntRecipeIngredientB
 	return b
 }
 
+// SetIngredient set the Ingredient field
 func (b *EntRecipeIngredientBuilder) SetIngredient(i *ent.Ingredient) *EntRecipeIngredientBuilder {
 	b.ingredientOverride = i
 	b.ingredientOverriden = true
 	return b
 }
 
+// SetIngredientID set the IngredientID field
 func (b *EntRecipeIngredientBuilder) SetIngredientID(i int) *EntRecipeIngredientBuilder {
 	b.ingredientIDOverride = i
 	b.ingredientIDOverriden = true
 	return b
 }
 
+// SetQuantity set the Quantity field
 func (b *EntRecipeIngredientBuilder) SetQuantity(i float32) *EntRecipeIngredientBuilder {
 	b.quantityOverride = i
 	b.quantityOverriden = true
 	return b
 }
 
+// SetUnit set the Unit field
 func (b *EntRecipeIngredientBuilder) SetUnit(i string) *EntRecipeIngredientBuilder {
 	b.unitOverride = i
 	b.unitOverriden = true
 	return b
 }
 
+// CreateV return a new ent.RecipeIngredient
 func (b *EntRecipeIngredientBuilder) CreateV(ctx context.Context) (ent.RecipeIngredient, error) {
 	var d ent.RecipeIngredient
 	p, err := b.Create(ctx)
@@ -613,11 +718,12 @@ func (b *EntRecipeIngredientBuilder) CreateV(ctx context.Context) (ent.RecipeIng
 	return d, err
 }
 
+// Create return a new *ent.RecipeIngredient
 func (b *EntRecipeIngredientBuilder) Create(ctx context.Context) (*ent.RecipeIngredient, error) {
 
-	var preSlice = []func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error{}
-	var lazySlice = []func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error{}
-	var postSlice = []func(ctx context.Context, i *ent.RecipeIngredient, c int, creator *ent.RecipeIngredientCreate) error{}
+	var preSlice = []func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error{}
+	var lazySlice = []func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error{}
+	var postSlice = []func(ctx context.Context, i *ent.RecipeIngredient, c int) error{}
 
 	index := b.counter.Get()
 	_ = index
@@ -626,10 +732,10 @@ func (b *EntRecipeIngredientBuilder) Create(ctx context.Context) (*ent.RecipeIng
 	entBuilder := client.RecipeIngredient.Create()
 
 	if b.ingredientOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			value := b.ingredientOverride
 
-			creator.SetIngredient(value)
+			i.EntCreator().SetIngredient(value)
 
 			i.Ingredient = value
 			return nil
@@ -648,10 +754,10 @@ func (b *EntRecipeIngredientBuilder) Create(ctx context.Context) (*ent.RecipeIng
 	}
 
 	if b.ingredientIDOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			value := b.ingredientIDOverride
 
-			creator.SetIngredientID(value)
+			i.EntCreator().SetIngredientID(value)
 
 			i.IngredientID = value
 			return nil
@@ -670,10 +776,10 @@ func (b *EntRecipeIngredientBuilder) Create(ctx context.Context) (*ent.RecipeIng
 	}
 
 	if b.quantityOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			value := b.quantityOverride
 
-			creator.SetQuantity(value)
+			i.EntCreator().SetQuantity(value)
 
 			i.Quantity = value
 			return nil
@@ -692,10 +798,10 @@ func (b *EntRecipeIngredientBuilder) Create(ctx context.Context) (*ent.RecipeIng
 	}
 
 	if b.unitOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntRecipeIngredientMutator, c int, creator *ent.RecipeIngredientCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntRecipeIngredientMutator, c int) error {
 			value := b.unitOverride
 
-			creator.SetUnit(value)
+			i.EntCreator().SetUnit(value)
 
 			i.Unit = value
 			return nil
@@ -714,9 +820,12 @@ func (b *EntRecipeIngredientBuilder) Create(ctx context.Context) (*ent.RecipeIng
 	}
 
 	v := &EntRecipeIngredientMutator{}
+
+	v._creator = entBuilder
+
 	for _, f := range preSlice {
 
-		err := f(ctx, v, index, entBuilder)
+		err := f(ctx, v, index)
 
 		if err != nil {
 			return nil, err
@@ -724,9 +833,14 @@ func (b *EntRecipeIngredientBuilder) Create(ctx context.Context) (*ent.RecipeIng
 	}
 	for _, f := range lazySlice {
 
-		err := f(ctx, v, index, entBuilder)
+		err := f(ctx, v, index)
 
 		if err != nil {
+			return nil, err
+		}
+	}
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
 			return nil, err
 		}
 	}
@@ -743,9 +857,7 @@ func (b *EntRecipeIngredientBuilder) Create(ctx context.Context) (*ent.RecipeIng
 		}
 	}
 	for _, f := range postSlice {
-
-		err := f(ctx, new, index, entBuilder)
-
+		err := f(ctx, new, index)
 		if err != nil {
 			return nil, err
 		}

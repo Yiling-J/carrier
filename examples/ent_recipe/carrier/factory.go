@@ -7,13 +7,16 @@ import (
 	"github.com/Yiling-J/carrier/examples/ent_recipe/ent"
 )
 
+// Factory is struct factory wrapper
 type Factory struct {
 }
 
+// NewFactory return a new struct factory wrapper
 func NewFactory() *Factory {
 	return &Factory{}
 }
 
+// EntFactory is ent factory wrapper
 type EntFactory struct {
 	recipeFactory *factory.EntRecipeFactory
 
@@ -30,76 +33,108 @@ type EntFactory struct {
 	client *ent.Client
 }
 
+// NewEntFactory return a new ent factory wrapper
 func NewEntFactory(client *ent.Client) *EntFactory {
 	return &EntFactory{client: client}
 }
 
+// Client return wrappper's ent client
 func (f *EntFactory) Client() *ent.Client {
 	return f.client
 }
 
+// EntRecipeMetaFactory return a new meta factory with given ent client
 func EntRecipeMetaFactory() *factory.EntRecipeMetaFactory {
 	return &factory.EntRecipeMetaFactory{}
 }
+
+// SetRecipeFactory set a factory in wrapper
 func (f *EntFactory) SetRecipeFactory(c *factory.EntRecipeFactory) *EntFactory {
 	f.recipeFactory = c.Client(f.client)
 	return f
 }
+
+// RecipeFactory return the EntRecipeFactory in wrapper
 func (f *EntFactory) RecipeFactory() *factory.EntRecipeFactory {
 	return f.recipeFactory
 }
 
+// EntUserMetaFactory return a new meta factory with given ent client
 func EntUserMetaFactory() *factory.EntUserMetaFactory {
 	return &factory.EntUserMetaFactory{}
 }
+
+// SetUserFactory set a factory in wrapper
 func (f *EntFactory) SetUserFactory(c *factory.EntUserFactory) *EntFactory {
 	f.userFactory = c.Client(f.client)
 	return f
 }
+
+// UserFactory return the EntUserFactory in wrapper
 func (f *EntFactory) UserFactory() *factory.EntUserFactory {
 	return f.userFactory
 }
 
+// EntIngredientMetaFactory return a new meta factory with given ent client
 func EntIngredientMetaFactory() *factory.EntIngredientMetaFactory {
 	return &factory.EntIngredientMetaFactory{}
 }
+
+// SetIngredientFactory set a factory in wrapper
 func (f *EntFactory) SetIngredientFactory(c *factory.EntIngredientFactory) *EntFactory {
 	f.ingredientFactory = c.Client(f.client)
 	return f
 }
+
+// IngredientFactory return the EntIngredientFactory in wrapper
 func (f *EntFactory) IngredientFactory() *factory.EntIngredientFactory {
 	return f.ingredientFactory
 }
 
+// EntCategoryMetaFactory return a new meta factory with given ent client
 func EntCategoryMetaFactory() *factory.EntCategoryMetaFactory {
 	return &factory.EntCategoryMetaFactory{}
 }
+
+// SetCategoryFactory set a factory in wrapper
 func (f *EntFactory) SetCategoryFactory(c *factory.EntCategoryFactory) *EntFactory {
 	f.categoryFactory = c.Client(f.client)
 	return f
 }
+
+// CategoryFactory return the EntCategoryFactory in wrapper
 func (f *EntFactory) CategoryFactory() *factory.EntCategoryFactory {
 	return f.categoryFactory
 }
 
+// EntRecipeIngredientMetaFactory return a new meta factory with given ent client
 func EntRecipeIngredientMetaFactory() *factory.EntRecipeIngredientMetaFactory {
 	return &factory.EntRecipeIngredientMetaFactory{}
 }
+
+// SetRecipeIngredientFactory set a factory in wrapper
 func (f *EntFactory) SetRecipeIngredientFactory(c *factory.EntRecipeIngredientFactory) *EntFactory {
 	f.recipeIngredientFactory = c.Client(f.client)
 	return f
 }
+
+// RecipeIngredientFactory return the EntRecipeIngredientFactory in wrapper
 func (f *EntFactory) RecipeIngredientFactory() *factory.EntRecipeIngredientFactory {
 	return f.recipeIngredientFactory
 }
 
+// EntStepMetaFactory return a new meta factory with given ent client
 func EntStepMetaFactory() *factory.EntStepMetaFactory {
 	return &factory.EntStepMetaFactory{}
 }
+
+// SetStepFactory set a factory in wrapper
 func (f *EntFactory) SetStepFactory(c *factory.EntStepFactory) *EntFactory {
 	f.stepFactory = c.Client(f.client)
 	return f
 }
+
+// StepFactory return the EntStepFactory in wrapper
 func (f *EntFactory) StepFactory() *factory.EntStepFactory {
 	return f.stepFactory
 }

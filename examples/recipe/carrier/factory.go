@@ -5,6 +5,7 @@ import (
 	"github.com/Yiling-J/carrier/examples/recipe/carrier/factory"
 )
 
+// Factory is struct factory wrapper
 type Factory struct {
 	recipeFactory *factory.RecipeFactory
 
@@ -19,78 +20,103 @@ type Factory struct {
 	userFactory *factory.UserFactory
 }
 
+// NewFactory return a new struct factory wrapper
 func NewFactory() *Factory {
 	return &Factory{}
 }
 
+// RecipeMetaFactory() return a new RecipeMetaFactory
 func RecipeMetaFactory() *factory.RecipeMetaFactory {
 	return &factory.RecipeMetaFactory{}
 }
+
+// SetRecipeFactory set a factory in wrapper
 func (f *Factory) SetRecipeFactory(c *factory.RecipeFactory) *Factory {
 	f.recipeFactory = c
 	return f
 }
 
+// RecipeFactory return the RecipeFactory in wrapper
 func (f *Factory) RecipeFactory() *factory.RecipeFactory {
 	return f.recipeFactory
 }
 
+// RecipeStepMetaFactory() return a new RecipeStepMetaFactory
 func RecipeStepMetaFactory() *factory.RecipeStepMetaFactory {
 	return &factory.RecipeStepMetaFactory{}
 }
+
+// SetRecipeStepFactory set a factory in wrapper
 func (f *Factory) SetRecipeStepFactory(c *factory.RecipeStepFactory) *Factory {
 	f.recipeStepFactory = c
 	return f
 }
 
+// RecipeStepFactory return the RecipeStepFactory in wrapper
 func (f *Factory) RecipeStepFactory() *factory.RecipeStepFactory {
 	return f.recipeStepFactory
 }
 
+// IngredientMetaFactory() return a new IngredientMetaFactory
 func IngredientMetaFactory() *factory.IngredientMetaFactory {
 	return &factory.IngredientMetaFactory{}
 }
+
+// SetIngredientFactory set a factory in wrapper
 func (f *Factory) SetIngredientFactory(c *factory.IngredientFactory) *Factory {
 	f.ingredientFactory = c
 	return f
 }
 
+// IngredientFactory return the IngredientFactory in wrapper
 func (f *Factory) IngredientFactory() *factory.IngredientFactory {
 	return f.ingredientFactory
 }
 
+// RecipeIngredientMetaFactory() return a new RecipeIngredientMetaFactory
 func RecipeIngredientMetaFactory() *factory.RecipeIngredientMetaFactory {
 	return &factory.RecipeIngredientMetaFactory{}
 }
+
+// SetRecipeIngredientFactory set a factory in wrapper
 func (f *Factory) SetRecipeIngredientFactory(c *factory.RecipeIngredientFactory) *Factory {
 	f.recipeIngredientFactory = c
 	return f
 }
 
+// RecipeIngredientFactory return the RecipeIngredientFactory in wrapper
 func (f *Factory) RecipeIngredientFactory() *factory.RecipeIngredientFactory {
 	return f.recipeIngredientFactory
 }
 
+// CategoryMetaFactory() return a new CategoryMetaFactory
 func CategoryMetaFactory() *factory.CategoryMetaFactory {
 	return &factory.CategoryMetaFactory{}
 }
+
+// SetCategoryFactory set a factory in wrapper
 func (f *Factory) SetCategoryFactory(c *factory.CategoryFactory) *Factory {
 	f.categoryFactory = c
 	return f
 }
 
+// CategoryFactory return the CategoryFactory in wrapper
 func (f *Factory) CategoryFactory() *factory.CategoryFactory {
 	return f.categoryFactory
 }
 
+// UserMetaFactory() return a new UserMetaFactory
 func UserMetaFactory() *factory.UserMetaFactory {
 	return &factory.UserMetaFactory{}
 }
+
+// SetUserFactory set a factory in wrapper
 func (f *Factory) SetUserFactory(c *factory.UserFactory) *Factory {
 	f.userFactory = c
 	return f
 }
 
+// UserFactory return the UserFactory in wrapper
 func (f *Factory) UserFactory() *factory.UserFactory {
 	return f.userFactory
 }

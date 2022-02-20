@@ -9,13 +9,20 @@ import (
 
 type EntCategoryMutator struct {
 	Name string
+
+	_creator *ent.CategoryCreate
+}
+
+func (m *EntCategoryMutator) EntCreator() *ent.CategoryCreate {
+	return m._creator
 }
 
 type entCategoryMutation struct {
 	nameType int
-	nameFunc func(ctx context.Context, i *EntCategoryMutator, c int, creator *ent.CategoryCreate) error
+	nameFunc func(ctx context.Context, i *EntCategoryMutator, c int) error
 
-	afterCreateFunc func(ctx context.Context, i *ent.Category) error
+	beforeCreateFunc func(ctx context.Context, i *EntCategoryMutator) error
+	afterCreateFunc  func(ctx context.Context, i *ent.Category) error
 }
 type EntCategoryMetaFactory struct {
 	mutation entCategoryMutation
@@ -28,6 +35,11 @@ type entCategoryTrait struct {
 func EntCategoryTrait() *entCategoryTrait {
 	return &entCategoryTrait{}
 }
+func (*entCategoryMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *EntCategoryMutator) error) func(m *entCategoryMutation) {
+	return func(m *entCategoryMutation) {
+		m.beforeCreateFunc = fn
+	}
+}
 func (*entCategoryMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *ent.Category) error) func(m *entCategoryMutation) {
 	return func(m *entCategoryMutation) {
 		m.afterCreateFunc = fn
@@ -37,7 +49,7 @@ func (*entCategoryMutation) afterCreateMutateFunc(fn func(ctx context.Context, i
 func (*entCategoryMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i int) (string, error)) func(m *entCategoryMutation) {
 	return func(m *entCategoryMutation) {
 		m.nameType = TypeSequence
-		m.nameFunc = func(ctx context.Context, i *EntCategoryMutator, c int, creator *ent.CategoryCreate) error {
+		m.nameFunc = func(ctx context.Context, i *EntCategoryMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -46,7 +58,7 @@ func (*entCategoryMutation) nameSequenceMutateFunc(fn func(ctx context.Context, 
 				return err
 			}
 
-			creator.SetName(value)
+			i.EntCreator().SetName(value)
 
 			i.Name = value
 			return nil
@@ -56,7 +68,7 @@ func (*entCategoryMutation) nameSequenceMutateFunc(fn func(ctx context.Context, 
 func (*entCategoryMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *EntCategoryMutator) (string, error)) func(m *entCategoryMutation) {
 	return func(m *entCategoryMutation) {
 		m.nameType = TypeLazy
-		m.nameFunc = func(ctx context.Context, i *EntCategoryMutator, c int, creator *ent.CategoryCreate) error {
+		m.nameFunc = func(ctx context.Context, i *EntCategoryMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -65,7 +77,7 @@ func (*entCategoryMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *E
 				return err
 			}
 
-			creator.SetName(value)
+			i.EntCreator().SetName(value)
 
 			i.Name = value
 			return nil
@@ -75,9 +87,9 @@ func (*entCategoryMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *E
 func (*entCategoryMutation) nameDefaultMutateFunc(v string) func(m *entCategoryMutation) {
 	return func(m *entCategoryMutation) {
 		m.nameType = TypeDefault
-		m.nameFunc = func(ctx context.Context, i *EntCategoryMutator, c int, creator *ent.CategoryCreate) error {
+		m.nameFunc = func(ctx context.Context, i *EntCategoryMutator, c int) error {
 
-			creator.SetName(v)
+			i.EntCreator().SetName(v)
 
 			i.Name = v
 			return nil
@@ -87,7 +99,7 @@ func (*entCategoryMutation) nameDefaultMutateFunc(v string) func(m *entCategoryM
 func (*entCategoryMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (string, error)) func(m *entCategoryMutation) {
 	return func(m *entCategoryMutation) {
 		m.nameType = TypeFactory
-		m.nameFunc = func(ctx context.Context, i *EntCategoryMutator, c int, creator *ent.CategoryCreate) error {
+		m.nameFunc = func(ctx context.Context, i *EntCategoryMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -96,7 +108,7 @@ func (*entCategoryMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (
 				return err
 			}
 
-			creator.SetName(value)
+			i.EntCreator().SetName(value)
 
 			i.Name = value
 
@@ -105,48 +117,79 @@ func (*entCategoryMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (
 	}
 }
 
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (f *EntCategoryMetaFactory) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *EntCategoryMetaFactory {
 	f.mutation.nameSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (f *EntCategoryMetaFactory) SetNameLazy(fn func(ctx context.Context, i *EntCategoryMutator) (string, error)) *EntCategoryMetaFactory {
 	f.mutation.nameLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameDefault assign a default value to Name field
 func (f *EntCategoryMetaFactory) SetNameDefault(v string) *EntCategoryMetaFactory {
 	f.mutation.nameDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (f *EntCategoryMetaFactory) SetNameFactory(fn func(ctx context.Context) (string, error)) *EntCategoryMetaFactory {
 	f.mutation.nameFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (t *entCategoryTrait) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *entCategoryTrait {
 	t.updates = append(t.updates, t.mutation.nameSequenceMutateFunc(fn))
 	return t
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (t *entCategoryTrait) SetNameLazy(fn func(ctx context.Context, i *EntCategoryMutator) (string, error)) *entCategoryTrait {
 	t.updates = append(t.updates, t.mutation.nameLazyMutateFunc(fn))
 	return t
 }
+
+// SetNameDefault assign a default value to Name field
 func (t *entCategoryTrait) SetNameDefault(v string) *entCategoryTrait {
 	t.updates = append(t.updates, t.mutation.nameDefaultMutateFunc(v))
 	return t
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (t *entCategoryTrait) SetNameFactory(fn func(ctx context.Context) (string, error)) *entCategoryTrait {
 	t.updates = append(t.updates, t.mutation.nameFactoryMutateFunc(fn))
 	return t
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *EntCategoryMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Category) error) *EntCategoryMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *EntCategoryMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *EntCategoryMutator) error) *EntCategoryMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *entCategoryTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Category) error) *entCategoryTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *entCategoryTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *EntCategoryMutator) error) *entCategoryTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
+	return t
+}
+
+// Build create a  EntCategoryFactory from EntCategoryMetaFactory
 func (f *EntCategoryMetaFactory) Build() *EntCategoryFactory {
 	return &EntCategoryFactory{meta: *f, counter: &Counter{}}
 }
@@ -158,6 +201,7 @@ type EntCategoryFactory struct {
 	client *ent.Client
 }
 
+// SetName set the Name field
 func (f *EntCategoryFactory) SetName(i string) *EntCategoryBuilder {
 	builder := &EntCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
@@ -167,6 +211,7 @@ func (f *EntCategoryFactory) SetName(i string) *EntCategoryBuilder {
 	return builder
 }
 
+// Create return a new *ent.Category
 func (f *EntCategoryFactory) Create(ctx context.Context) (*ent.Category, error) {
 	builder := &EntCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -174,6 +219,8 @@ func (f *EntCategoryFactory) Create(ctx context.Context) (*ent.Category, error) 
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new ent.Category
 func (f *EntCategoryFactory) CreateV(ctx context.Context) (ent.Category, error) {
 	builder := &EntCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -181,6 +228,8 @@ func (f *EntCategoryFactory) CreateV(ctx context.Context) (ent.Category, error) 
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*ent.Category slice
 func (f *EntCategoryFactory) CreateBatch(ctx context.Context, n int) ([]*ent.Category, error) {
 	builder := &EntCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -188,6 +237,8 @@ func (f *EntCategoryFactory) CreateBatch(ctx context.Context, n int) ([]*ent.Cat
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []ent.Category slice
 func (f *EntCategoryFactory) CreateBatchV(ctx context.Context, n int) ([]ent.Category, error) {
 	builder := &EntCategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -196,6 +247,7 @@ func (f *EntCategoryFactory) CreateBatchV(ctx context.Context, n int) ([]ent.Cat
 	return builder.CreateBatchV(ctx, n)
 }
 
+// Client set ent client to EntCategoryFactory
 func (f *EntCategoryFactory) Client(c *ent.Client) *EntCategoryFactory {
 	f.client = c
 	return f
@@ -217,12 +269,14 @@ func (b *EntCategoryBuilder) Client(c *ent.Client) *EntCategoryBuilder {
 	return b
 }
 
+// SetName set the Name field
 func (b *EntCategoryBuilder) SetName(i string) *EntCategoryBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
 	return b
 }
 
+// CreateV return a new ent.Category
 func (b *EntCategoryBuilder) CreateV(ctx context.Context) (ent.Category, error) {
 	var d ent.Category
 	p, err := b.Create(ctx)
@@ -232,11 +286,12 @@ func (b *EntCategoryBuilder) CreateV(ctx context.Context) (ent.Category, error) 
 	return d, err
 }
 
+// Create return a new *ent.Category
 func (b *EntCategoryBuilder) Create(ctx context.Context) (*ent.Category, error) {
 
-	var preSlice = []func(ctx context.Context, i *EntCategoryMutator, c int, creator *ent.CategoryCreate) error{}
-	var lazySlice = []func(ctx context.Context, i *EntCategoryMutator, c int, creator *ent.CategoryCreate) error{}
-	var postSlice = []func(ctx context.Context, i *ent.Category, c int, creator *ent.CategoryCreate) error{}
+	var preSlice = []func(ctx context.Context, i *EntCategoryMutator, c int) error{}
+	var lazySlice = []func(ctx context.Context, i *EntCategoryMutator, c int) error{}
+	var postSlice = []func(ctx context.Context, i *ent.Category, c int) error{}
 
 	index := b.counter.Get()
 	_ = index
@@ -245,10 +300,10 @@ func (b *EntCategoryBuilder) Create(ctx context.Context) (*ent.Category, error) 
 	entBuilder := client.Category.Create()
 
 	if b.nameOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntCategoryMutator, c int, creator *ent.CategoryCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntCategoryMutator, c int) error {
 			value := b.nameOverride
 
-			creator.SetName(value)
+			i.EntCreator().SetName(value)
 
 			i.Name = value
 			return nil
@@ -267,9 +322,12 @@ func (b *EntCategoryBuilder) Create(ctx context.Context) (*ent.Category, error) 
 	}
 
 	v := &EntCategoryMutator{}
+
+	v._creator = entBuilder
+
 	for _, f := range preSlice {
 
-		err := f(ctx, v, index, entBuilder)
+		err := f(ctx, v, index)
 
 		if err != nil {
 			return nil, err
@@ -277,9 +335,14 @@ func (b *EntCategoryBuilder) Create(ctx context.Context) (*ent.Category, error) 
 	}
 	for _, f := range lazySlice {
 
-		err := f(ctx, v, index, entBuilder)
+		err := f(ctx, v, index)
 
 		if err != nil {
+			return nil, err
+		}
+	}
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
 			return nil, err
 		}
 	}
@@ -296,9 +359,7 @@ func (b *EntCategoryBuilder) Create(ctx context.Context) (*ent.Category, error) 
 		}
 	}
 	for _, f := range postSlice {
-
-		err := f(ctx, new, index, entBuilder)
-
+		err := f(ctx, new, index)
 		if err != nil {
 			return nil, err
 		}

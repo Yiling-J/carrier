@@ -11,7 +11,8 @@ type categoryMutation struct {
 	nameType int
 	nameFunc func(ctx context.Context, i *model.Category, c int) error
 
-	afterCreateFunc func(ctx context.Context, i *model.Category) error
+	beforeCreateFunc func(ctx context.Context, i *model.Category) error
+	afterCreateFunc  func(ctx context.Context, i *model.Category) error
 }
 type CategoryMetaFactory struct {
 	mutation categoryMutation
@@ -23,6 +24,11 @@ type categoryTrait struct {
 
 func CategoryTrait() *categoryTrait {
 	return &categoryTrait{}
+}
+func (*categoryMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *model.Category) error) func(m *categoryMutation) {
+	return func(m *categoryMutation) {
+		m.beforeCreateFunc = fn
+	}
 }
 func (*categoryMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *model.Category) error) func(m *categoryMutation) {
 	return func(m *categoryMutation) {
@@ -93,48 +99,79 @@ func (*categoryMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (str
 	}
 }
 
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (f *CategoryMetaFactory) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *CategoryMetaFactory {
 	f.mutation.nameSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (f *CategoryMetaFactory) SetNameLazy(fn func(ctx context.Context, i *model.Category) (string, error)) *CategoryMetaFactory {
 	f.mutation.nameLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameDefault assign a default value to Name field
 func (f *CategoryMetaFactory) SetNameDefault(v string) *CategoryMetaFactory {
 	f.mutation.nameDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (f *CategoryMetaFactory) SetNameFactory(fn func(ctx context.Context) (string, error)) *CategoryMetaFactory {
 	f.mutation.nameFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (t *categoryTrait) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *categoryTrait {
 	t.updates = append(t.updates, t.mutation.nameSequenceMutateFunc(fn))
 	return t
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (t *categoryTrait) SetNameLazy(fn func(ctx context.Context, i *model.Category) (string, error)) *categoryTrait {
 	t.updates = append(t.updates, t.mutation.nameLazyMutateFunc(fn))
 	return t
 }
+
+// SetNameDefault assign a default value to Name field
 func (t *categoryTrait) SetNameDefault(v string) *categoryTrait {
 	t.updates = append(t.updates, t.mutation.nameDefaultMutateFunc(v))
 	return t
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (t *categoryTrait) SetNameFactory(fn func(ctx context.Context) (string, error)) *categoryTrait {
 	t.updates = append(t.updates, t.mutation.nameFactoryMutateFunc(fn))
 	return t
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *CategoryMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Category) error) *CategoryMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *CategoryMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Category) error) *CategoryMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *categoryTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Category) error) *categoryTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *categoryTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Category) error) *categoryTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
+	return t
+}
+
+// Build create a  CategoryFactory from CategoryMetaFactory
 func (f *CategoryMetaFactory) Build() *CategoryFactory {
 	return &CategoryFactory{meta: *f, counter: &Counter{}}
 }
@@ -144,6 +181,7 @@ type CategoryFactory struct {
 	counter *Counter
 }
 
+// SetName set the Name field
 func (f *CategoryFactory) SetName(i string) *CategoryBuilder {
 	builder := &CategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
@@ -151,21 +189,28 @@ func (f *CategoryFactory) SetName(i string) *CategoryBuilder {
 	return builder
 }
 
+// Create return a new *model.Category
 func (f *CategoryFactory) Create(ctx context.Context) (*model.Category, error) {
 	builder := &CategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new model.Category
 func (f *CategoryFactory) CreateV(ctx context.Context) (model.Category, error) {
 	builder := &CategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*model.Category slice
 func (f *CategoryFactory) CreateBatch(ctx context.Context, n int) ([]*model.Category, error) {
 	builder := &CategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []model.Category slice
 func (f *CategoryFactory) CreateBatchV(ctx context.Context, n int) ([]model.Category, error) {
 	builder := &CategoryBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -181,12 +226,14 @@ type CategoryBuilder struct {
 	nameOverriden bool
 }
 
+// SetName set the Name field
 func (b *CategoryBuilder) SetName(i string) *CategoryBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
 	return b
 }
 
+// CreateV return a new model.Category
 func (b *CategoryBuilder) CreateV(ctx context.Context) (model.Category, error) {
 	var d model.Category
 	p, err := b.Create(ctx)
@@ -196,6 +243,7 @@ func (b *CategoryBuilder) CreateV(ctx context.Context) (model.Category, error) {
 	return d, err
 }
 
+// Create return a new *model.Category
 func (b *CategoryBuilder) Create(ctx context.Context) (*model.Category, error) {
 
 	var preSlice = []func(ctx context.Context, i *model.Category, c int) error{}
@@ -226,6 +274,7 @@ func (b *CategoryBuilder) Create(ctx context.Context) (*model.Category, error) {
 	}
 
 	v := &model.Category{}
+
 	for _, f := range preSlice {
 
 		err := f(ctx, v, index)
@@ -242,6 +291,11 @@ func (b *CategoryBuilder) Create(ctx context.Context) (*model.Category, error) {
 			return nil, err
 		}
 	}
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
+			return nil, err
+		}
+	}
 
 	new := v
 
@@ -252,9 +306,7 @@ func (b *CategoryBuilder) Create(ctx context.Context) (*model.Category, error) {
 		}
 	}
 	for _, f := range postSlice {
-
 		err := f(ctx, new, index)
-
 		if err != nil {
 			return nil, err
 		}
