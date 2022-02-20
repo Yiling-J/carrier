@@ -206,11 +206,14 @@ MetaFactory API can be categorized into 7 types of method:
 	- **Trait**: `Set{TraitName}Trait`
 
 - Each `MetaFactory` has 1 type:
+    - **BeforeCreate**: `SetBeforeCreateFunc`
+
+- Each `MetaFactory` has 1 type:
 	- **AfterCreate**: `SetAfterCreateFunc`
 
 The evaluation order of these methods are:
 ```
-Trait -> Default/Sequence/Factory -> Lazy -> Create -> AfterCreate -> Post
+Trait -> Default/Sequence/Factory -> Lazy -> BeforeCreate -> Create -> AfterCreate -> Post
 ```
 `Create` only exists in ent factory, will call ent builder `Save` method.
 
@@ -268,6 +271,26 @@ userMetaFactory.SetGroupFactory(groupFactory.Create)
 **> ent**
 
 Make sure related factory's ent client is set. By using factory wrapper or set it explicitly.
+
+#### BeforeCreate
+For struct factory, before create function is called after all lazy functions done. For ent factory, before create function is called right before to ent's `Save` method.
+```go
+groupMetaFactory.SetBeforeCreateFunc(func(ctx context.Context, creator *ent.GroupCreate) error {
+	// client *ent.Client
+	user, err := client.User.Create().
+		SetAge(30).
+		SetName("John").
+		Save(ctx)
+	if err != nil {
+		return err
+	}
+	creator.AddUsers(user)
+	return nil
+})
+```
+
+**Attention:**  
+Do not call other factories from this function to prevent infinite loops.
 
 #### AfterCreate
 For struct factory, after create function is called after all lazy functions done. For ent factory, after create function is called next to ent's `Save` method.
