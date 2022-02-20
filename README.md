@@ -192,7 +192,7 @@ and generate factory based on them. Both struct and pointer of struct are OK.
 Post function will run after struct created, with input value as param.
 
 ## MetaFactory API
-MetaFactory API can be categorized into 7 types of method:
+MetaFactory API can be categorized into 8 types of method:
 - Each field in `To` struct has 4 types:
 	- **Default**: `Set{Field}Default`
 	- **Sequence**: `Set{Field}Sequence`
@@ -205,10 +205,8 @@ MetaFactory API can be categorized into 7 types of method:
 - Each name in `[]Traits` has 1 type:
 	- **Trait**: `Set{TraitName}Trait`
 
-- Each `MetaFactory` has 1 type:
+- Each `MetaFactory` has 2 type:
     - **BeforeCreate**: `SetBeforeCreateFunc`
-
-- Each `MetaFactory` has 1 type:
 	- **AfterCreate**: `SetAfterCreateFunc`
 
 The evaluation order of these methods are:
@@ -260,6 +258,15 @@ entUserMetaFactory.SetEmailLazy(
 	},
 )
 ```
+You can get original ent mutation using `i.EntCreator()`:
+```go
+entUserMetaFactory.SetEmailLazy(
+	func(ctx context.Context, i *factory.EntUserMutator) (string, error) {
+		i.EntCreator().SetName("apple")
+		return "apple@carrier.com", nil
+	},
+)
+```
 
 #### Factory
 If a field's value has related factory, use `relatedFactory.Create` method as param here. You can also set the function manually.
@@ -275,22 +282,18 @@ Make sure related factory's ent client is set. By using factory wrapper or set i
 #### BeforeCreate
 For struct factory, before create function is called after all lazy functions done. For ent factory, before create function is called right before to ent's `Save` method.
 ```go
-groupMetaFactory.SetBeforeCreateFunc(func(ctx context.Context, creator *ent.GroupCreate) error {
-	// client *ent.Client
-	user, err := client.User.Create().
-		SetAge(30).
-		SetName("John").
-		Save(ctx)
-	if err != nil {
-		return err
-	}
-	creator.AddUsers(user)
+groupMetaFactory.SetBeforeCreateFunc(func(ctx context.Context, i *model.User) error {
 	return nil
 })
 ```
+**> ent**
 
-**Attention:**  
-Do not call other factories from this function to prevent infinite loops.
+```go
+entUserMetaFactory.SetBeforeCreateFunc(func(ctx context.Context, i *factory.EntUserMutator) error {
+	return nil
+})
+
+```
 
 #### AfterCreate
 For struct factory, after create function is called after all lazy functions done. For ent factory, after create function is called next to ent's `Save` method.
