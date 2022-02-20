@@ -14,7 +14,7 @@ type groupMutation struct {
 	categoryType int
 	categoryFunc func(ctx context.Context, i *model.Group, c int) error
 
-	beforeCreateFunc func(ctx context.Context) error
+	beforeCreateFunc func(ctx context.Context, i *model.Group) error
 	afterCreateFunc  func(ctx context.Context, i *model.Group) error
 }
 type GroupMetaFactory struct {
@@ -27,6 +27,11 @@ type groupTrait struct {
 
 func GroupTrait() *groupTrait {
 	return &groupTrait{}
+}
+func (*groupMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *model.Group) error) func(m *groupMutation) {
+	return func(m *groupMutation) {
+		m.beforeCreateFunc = fn
+	}
 }
 func (*groupMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *model.Group) error) func(m *groupMutation) {
 	return func(m *groupMutation) {
@@ -262,8 +267,8 @@ func (f *GroupMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *mo
 	return f
 }
 
-// SetBeforeCreateFunc register a function to be called after struct create
-func (f *GroupMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error) *GroupMetaFactory {
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *GroupMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Group) error) *GroupMetaFactory {
 	f.mutation.beforeCreateFunc = fn
 	return f
 }
@@ -271,6 +276,12 @@ func (f *GroupMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) erro
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *groupTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Group) error) *groupTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *groupTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Group) error) *groupTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
 	return t
 }
 
@@ -415,6 +426,7 @@ func (b *GroupBuilder) Create(ctx context.Context) (*model.Group, error) {
 	}
 
 	v := &model.Group{}
+
 	for _, f := range preSlice {
 
 		err := f(ctx, v, index)
@@ -431,12 +443,12 @@ func (b *GroupBuilder) Create(ctx context.Context) (*model.Group, error) {
 			return nil, err
 		}
 	}
-
 	if b.mutation.beforeCreateFunc != nil {
-		if err := b.mutation.beforeCreateFunc(ctx); err != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
 			return nil, err
 		}
 	}
+
 	new := v
 
 	if b.mutation.afterCreateFunc != nil {
@@ -446,9 +458,7 @@ func (b *GroupBuilder) Create(ctx context.Context) (*model.Group, error) {
 		}
 	}
 	for _, f := range postSlice {
-
 		err := f(ctx, new, index)
-
 		if err != nil {
 			return nil, err
 		}

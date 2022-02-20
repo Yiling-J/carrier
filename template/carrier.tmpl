@@ -24,25 +24,21 @@ import (
 	{{range .Fields}}
 	    {{.Name}} {{.ValueType}}
 	{{end}}
+	_creator *{{$EntPkg}}.{{$RawSchemaName}}Create
+	}
+	func (m *{{$SchemaName}}Mutator) EntCreator() *{{$EntPkg}}.{{$RawSchemaName}}Create {
+	return m._creator
 	}
     {{end}}
     type {{$SchemaName | FirstLower}}Mutation struct {
     {{range .Fields}}
-	{{$DynamicParams := ""}}
-	{{if $EntSchema}}
-	    {{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
-	{{end}}
 	{{.Name | FirstLower}}Type int
-	{{.Name | FirstLower}}Func func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error
+	{{.Name | FirstLower}}Func func(ctx context.Context, i *{{$SchemaType}}, c int) error
     {{end}}
     {{range .PostFields}}
 	_post{{.Name}}Func func(ctx context.Context, set bool, obj *{{$CreatedType}}, i {{.ValueType}}) error
     {{end}}
-	{{$DynamicParams := ""}}
-	{{if $EntSchema}}
-		{{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
-	{{end}}
-	beforeCreateFunc func(ctx context.Context, {{$DynamicParams}}) error
+    beforeCreateFunc func(ctx context.Context, i *{{$SchemaType}}) error
     afterCreateFunc func(ctx context.Context, i *{{$CreatedType}}) error
     }
     type {{$SchemaName}}MetaFactory struct {
@@ -58,20 +54,21 @@ import (
     func {{$SchemaName}}Trait() *{{$SchemaName | FirstLower}}Trait {
     return &{{$SchemaName | FirstLower}}Trait{}
     }
+    func (*{{$SchemaName | FirstLower}}Mutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *{{$SchemaType}}) error) func(m *{{$SchemaName | FirstLower}}Mutation) {
+    return func(m *{{$SchemaName | FirstLower}}Mutation) {
+    m.beforeCreateFunc = fn
+    }
+    }
     func (*{{$SchemaName | FirstLower}}Mutation) afterCreateMutateFunc(fn func(ctx context.Context, i *{{$CreatedType}}) error) func(m *{{$SchemaName | FirstLower}}Mutation) {
     return func(m *{{$SchemaName | FirstLower}}Mutation) {
     m.afterCreateFunc = fn
     }
     }
     {{range .Fields}}
-	{{$DynamicParams := ""}}
-	{{if $EntSchema}}
-	    {{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
-	{{end}}
 	func (*{{$SchemaName | FirstLower}}Mutation) {{.Name | FirstLower}}SequenceMutateFunc(fn func(ctx context.Context, i int) ({{.ValueType}}, error)) func(m *{{$SchemaName | FirstLower}}Mutation) {
 	return func(m *{{$SchemaName | FirstLower}}Mutation) {
 	m.{{.Name | FirstLower}}Type = TypeSequence
-	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int) error {
 	if fn == nil {
 	return nil
 	}
@@ -80,7 +77,7 @@ import (
 	return err
 	}
 	{{if $EntSchema}}
-	    creator.{{.Setter}}(value)
+	    i.EntCreator().{{.Setter}}(value)
 	{{end}}
 	i.{{.Name}} = value
 	return nil
@@ -90,7 +87,7 @@ import (
 	func (*{{$SchemaName | FirstLower}}Mutation) {{.Name | FirstLower}}LazyMutateFunc(fn func(ctx context.Context, i *{{$SchemaType}}) ({{.ValueType}}, error)) func(m *{{$SchemaName | FirstLower}}Mutation) {
 	return func(m *{{$SchemaName | FirstLower}}Mutation) {
 	m.{{.Name | FirstLower}}Type = TypeLazy
-	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int) error {
 	if fn == nil {
 	return nil
 	}
@@ -99,7 +96,7 @@ import (
 	return err
 	}
 	{{if $EntSchema}}
-	    creator.{{.Setter}}(value)
+	    i.EntCreator().{{.Setter}}(value)
 	{{end}}
 	i.{{.Name}} = value
 	return nil
@@ -109,9 +106,9 @@ import (
 	func (*{{$SchemaName | FirstLower}}Mutation) {{.Name | FirstLower}}DefaultMutateFunc(v {{.ValueType}}) func(m *{{$SchemaName | FirstLower}}Mutation) {
 	return func(m *{{$SchemaName | FirstLower}}Mutation) {
 	m.{{.Name | FirstLower}}Type = TypeDefault
-	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int) error {
 	{{if $EntSchema}}
-	    creator.{{.Setter}}(v)
+	    i.EntCreator().{{.Setter}}(v)
 	{{end}}
 	i.{{.Name}} = v
 	return nil
@@ -121,7 +118,7 @@ import (
 	func (*{{$SchemaName | FirstLower}}Mutation) {{.Name | FirstLower}}FactoryMutateFunc(fn func(ctx context.Context) ({{.ValueType}}, error)) func(m *{{$SchemaName | FirstLower}}Mutation) {
 	return func(m *{{$SchemaName | FirstLower}}Mutation) {
 	m.{{.Name | FirstLower}}Type = TypeFactory
-	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	m.{{.Name | FirstLower}}Func = func(ctx context.Context, i *{{$SchemaType}}, c int) error {
 	if fn == nil {
 	return nil
 	}
@@ -130,7 +127,7 @@ import (
 	return err
 	}
 	{{if $EntSchema}}
-	    creator.{{.Setter}}(value)
+	    i.EntCreator().{{.Setter}}(value)
 	{{end}}
 	i.{{.Name}} = value
 
@@ -208,13 +205,18 @@ import (
     return f
     }
     // SetBeforeCreateFunc register a function to be called before struct create
-    func (f *{{$SchemaName}}MetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, {{$DynamicParams}}) error) *{{$SchemaName}}MetaFactory {
+    func (f *{{$SchemaName}}MetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *{{$SchemaType}}) error) *{{$SchemaName}}MetaFactory {
     f.mutation.beforeCreateFunc = fn
     return f
     }
     // SetAfterCreateFunc register a function to be called after struct create
     func (t *{{$SchemaName | FirstLower}}Trait) SetAfterCreateFunc(fn func(ctx context.Context, i *{{$CreatedType}}) error) *{{$SchemaName | FirstLower}}Trait {
     t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+    return t
+    }
+    // SetBeforeCreateFunc register a function to be called before struct create
+    func (t *{{$SchemaName | FirstLower}}Trait) SetBeforeCreateFunc(fn func(ctx context.Context, i *{{$SchemaType}}) error) *{{$SchemaName | FirstLower}}Trait {
+    t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
     return t
     }
     // Build create a  {{$SchemaName}}Factory from {{$SchemaName}}MetaFactory
@@ -370,9 +372,9 @@ import (
     // Create return a new *{{$CreatedType}}
     func (b *{{$SchemaName}}Builder) Create(ctx context.Context) (*{{$CreatedType}}, error) {
     {{if $EntSchema}}
-	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *{{$EntPkg}}.{{.Name}}Create) error{}
-	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int, creator *{{$EntPkg}}.{{.Name}}Create) error{}
-	var postSlice = []func(ctx context.Context, i *{{$CreatedType}}, c int, creator *{{$EntPkg}}.{{.Name}}Create) error{}
+	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
+	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
+	var postSlice = []func(ctx context.Context, i *{{$CreatedType}}, c int) error{}
     {{else}}
 	var preSlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
 	var lazySlice = []func(ctx context.Context, i *{{$SchemaType}}, c int) error{}
@@ -387,15 +389,11 @@ import (
     {{end}}
 
     {{range .Fields}}
-	{{$DynamicParams := ""}}
-	{{if $EntSchema}}
-	    {{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
-	{{end}}
 	if b.{{.Name | FirstLower}}Overriden {
-	preSlice = append(preSlice, func(ctx context.Context, i *{{$SchemaType}}, c int, {{$DynamicParams}}) error {
+	preSlice = append(preSlice, func(ctx context.Context, i *{{$SchemaType}}, c int) error {
 	value := b.{{.Name | FirstLower}}Override
 	{{if $EntSchema}}
-	    creator.{{.Setter}}(value)
+	    i.EntCreator().{{.Setter}}(value)
 	{{end}}
 	i.{{.Name}} = value
 	return nil
@@ -414,12 +412,8 @@ import (
 	}
     {{end}}
     {{range .PostFields}}
-	{{$DynamicParams := ""}}
-	{{if $EntSchema}}
-	    {{$DynamicParams = $RawSchemaName | printf "creator *%s.%sCreate" $EntPkg}}
-	{{end}}
 	if b.mutation._post{{.Name}}Func != nil {
-	postSlice = append(postSlice, func(ctx context.Context, i *{{$CreatedType}}, c int, {{$DynamicParams}}) error {
+	postSlice = append(postSlice, func(ctx context.Context, i *{{$CreatedType}}, c int) error {
 	err := b.mutation._post{{.Name}}Func(ctx, b._post{{.Name}}Set, i, b._post{{.Name}})
 	return err
 	})
@@ -427,9 +421,12 @@ import (
     {{end}}
 
     v := &{{$SchemaType}}{}
+    {{if $EntSchema}}
+	v._creator = entBuilder
+    {{end}}
     for _, f := range preSlice {
     {{if $EntSchema}}
-	err := f(ctx, v, index, entBuilder)
+	err := f(ctx, v, index)
     {{else}}
 	err := f(ctx, v, index)
     {{end}}
@@ -439,7 +436,7 @@ import (
     }
     for _, f := range lazySlice {
     {{if $EntSchema}}
-	err := f(ctx, v, index, entBuilder)
+	err := f(ctx, v, index)
     {{else}}
 	err := f(ctx, v, index)
     {{end}}
@@ -447,22 +444,17 @@ import (
     return nil, err
     }
     }
+    if b.mutation.beforeCreateFunc != nil {
+    if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
+    return nil, err
+    }
+    }
     {{if $EntSchema}}
-	if b.mutation.beforeCreateFunc != nil {
-	if err := b.mutation.beforeCreateFunc(ctx, entBuilder); err != nil {
-	return nil, err
-	}
-	}
 	new, err := entBuilder.Save(ctx)
 	if err != nil {
 	return nil, err
 	}
     {{else}}
-	if b.mutation.beforeCreateFunc != nil {
-	if err := b.mutation.beforeCreateFunc(ctx); err != nil {
-	return nil, err
-	}
-	}
 	new := v
     {{end}}
     if b.mutation.afterCreateFunc != nil {
@@ -472,11 +464,7 @@ import (
     }
     }
     for _, f := range postSlice {
-    {{if $EntSchema}}
-	err := f(ctx, new, index, entBuilder)
-    {{else}}
-	err := f(ctx, new, index)
-    {{end}}
+    err := f(ctx, new, index)
     if err != nil {
     return nil, err
     }

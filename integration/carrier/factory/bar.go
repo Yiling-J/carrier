@@ -11,7 +11,7 @@ type barMutation struct {
 	nameType int
 	nameFunc func(ctx context.Context, i *model.Foo, c int) error
 
-	beforeCreateFunc func(ctx context.Context) error
+	beforeCreateFunc func(ctx context.Context, i *model.Foo) error
 	afterCreateFunc  func(ctx context.Context, i *model.Foo) error
 }
 type BarMetaFactory struct {
@@ -24,6 +24,11 @@ type barTrait struct {
 
 func BarTrait() *barTrait {
 	return &barTrait{}
+}
+func (*barMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *model.Foo) error) func(m *barMutation) {
+	return func(m *barMutation) {
+		m.beforeCreateFunc = fn
+	}
 }
 func (*barMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *model.Foo) error) func(m *barMutation) {
 	return func(m *barMutation) {
@@ -148,8 +153,8 @@ func (f *BarMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *mode
 	return f
 }
 
-// SetBeforeCreateFunc register a function to be called after struct create
-func (f *BarMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error) *BarMetaFactory {
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *BarMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Foo) error) *BarMetaFactory {
 	f.mutation.beforeCreateFunc = fn
 	return f
 }
@@ -157,6 +162,12 @@ func (f *BarMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error)
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *barTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Foo) error) *barTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *barTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Foo) error) *barTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
 	return t
 }
 
@@ -263,6 +274,7 @@ func (b *BarBuilder) Create(ctx context.Context) (*model.Foo, error) {
 	}
 
 	v := &model.Foo{}
+
 	for _, f := range preSlice {
 
 		err := f(ctx, v, index)
@@ -279,12 +291,12 @@ func (b *BarBuilder) Create(ctx context.Context) (*model.Foo, error) {
 			return nil, err
 		}
 	}
-
 	if b.mutation.beforeCreateFunc != nil {
-		if err := b.mutation.beforeCreateFunc(ctx); err != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
 			return nil, err
 		}
 	}
+
 	new := v
 
 	if b.mutation.afterCreateFunc != nil {
@@ -294,9 +306,7 @@ func (b *BarBuilder) Create(ctx context.Context) (*model.Foo, error) {
 		}
 	}
 	for _, f := range postSlice {
-
 		err := f(ctx, new, index)
-
 		if err != nil {
 			return nil, err
 		}
