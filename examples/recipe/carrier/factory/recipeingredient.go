@@ -17,7 +17,8 @@ type recipeIngredientMutation struct {
 	unitType int
 	unitFunc func(ctx context.Context, i *model.RecipeIngredient, c int) error
 
-	afterCreateFunc func(ctx context.Context, i *model.RecipeIngredient) error
+	beforeCreateFunc func(ctx context.Context, i *model.RecipeIngredient) error
+	afterCreateFunc  func(ctx context.Context, i *model.RecipeIngredient) error
 }
 type RecipeIngredientMetaFactory struct {
 	mutation recipeIngredientMutation
@@ -29,6 +30,11 @@ type recipeIngredientTrait struct {
 
 func RecipeIngredientTrait() *recipeIngredientTrait {
 	return &recipeIngredientTrait{}
+}
+func (*recipeIngredientMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *model.RecipeIngredient) error) func(m *recipeIngredientMutation) {
+	return func(m *recipeIngredientMutation) {
+		m.beforeCreateFunc = fn
+	}
 }
 func (*recipeIngredientMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *model.RecipeIngredient) error) func(m *recipeIngredientMutation) {
 	return func(m *recipeIngredientMutation) {
@@ -99,34 +105,49 @@ func (*recipeIngredientMutation) ingredientFactoryMutateFunc(fn func(ctx context
 	}
 }
 
+// SetIngredientSequence register a function which accept a sequence counter and set return value to Ingredient field
 func (f *RecipeIngredientMetaFactory) SetIngredientSequence(fn func(ctx context.Context, i int) (*model.Ingredient, error)) *RecipeIngredientMetaFactory {
 	f.mutation.ingredientSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientLazy register a function which accept the build struct and set return value to Ingredient field
 func (f *RecipeIngredientMetaFactory) SetIngredientLazy(fn func(ctx context.Context, i *model.RecipeIngredient) (*model.Ingredient, error)) *RecipeIngredientMetaFactory {
 	f.mutation.ingredientLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientDefault assign a default value to Ingredient field
 func (f *RecipeIngredientMetaFactory) SetIngredientDefault(v *model.Ingredient) *RecipeIngredientMetaFactory {
 	f.mutation.ingredientDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetIngredientFactory register a factory function and assign return value to Ingredient, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeIngredientMetaFactory) SetIngredientFactory(fn func(ctx context.Context) (*model.Ingredient, error)) *RecipeIngredientMetaFactory {
 	f.mutation.ingredientFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientSequence register a function which accept a sequence counter and set return value to Ingredient field
 func (t *recipeIngredientTrait) SetIngredientSequence(fn func(ctx context.Context, i int) (*model.Ingredient, error)) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientSequenceMutateFunc(fn))
 	return t
 }
+
+// SetIngredientLazy register a function which accept the build struct and set return value to Ingredient field
 func (t *recipeIngredientTrait) SetIngredientLazy(fn func(ctx context.Context, i *model.RecipeIngredient) (*model.Ingredient, error)) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientLazyMutateFunc(fn))
 	return t
 }
+
+// SetIngredientDefault assign a default value to Ingredient field
 func (t *recipeIngredientTrait) SetIngredientDefault(v *model.Ingredient) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientDefaultMutateFunc(v))
 	return t
 }
+
+// SetIngredientFactory register a factory function and assign return value to Ingredient, you can also use related factory's Create/CreateV as input function here
 func (t *recipeIngredientTrait) SetIngredientFactory(fn func(ctx context.Context) (*model.Ingredient, error)) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.ingredientFactoryMutateFunc(fn))
 	return t
@@ -195,34 +216,49 @@ func (*recipeIngredientMutation) quantityFactoryMutateFunc(fn func(ctx context.C
 	}
 }
 
+// SetQuantitySequence register a function which accept a sequence counter and set return value to Quantity field
 func (f *RecipeIngredientMetaFactory) SetQuantitySequence(fn func(ctx context.Context, i int) (float32, error)) *RecipeIngredientMetaFactory {
 	f.mutation.quantitySequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetQuantityLazy register a function which accept the build struct and set return value to Quantity field
 func (f *RecipeIngredientMetaFactory) SetQuantityLazy(fn func(ctx context.Context, i *model.RecipeIngredient) (float32, error)) *RecipeIngredientMetaFactory {
 	f.mutation.quantityLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetQuantityDefault assign a default value to Quantity field
 func (f *RecipeIngredientMetaFactory) SetQuantityDefault(v float32) *RecipeIngredientMetaFactory {
 	f.mutation.quantityDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetQuantityFactory register a factory function and assign return value to Quantity, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeIngredientMetaFactory) SetQuantityFactory(fn func(ctx context.Context) (float32, error)) *RecipeIngredientMetaFactory {
 	f.mutation.quantityFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetQuantitySequence register a function which accept a sequence counter and set return value to Quantity field
 func (t *recipeIngredientTrait) SetQuantitySequence(fn func(ctx context.Context, i int) (float32, error)) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.quantitySequenceMutateFunc(fn))
 	return t
 }
+
+// SetQuantityLazy register a function which accept the build struct and set return value to Quantity field
 func (t *recipeIngredientTrait) SetQuantityLazy(fn func(ctx context.Context, i *model.RecipeIngredient) (float32, error)) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.quantityLazyMutateFunc(fn))
 	return t
 }
+
+// SetQuantityDefault assign a default value to Quantity field
 func (t *recipeIngredientTrait) SetQuantityDefault(v float32) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.quantityDefaultMutateFunc(v))
 	return t
 }
+
+// SetQuantityFactory register a factory function and assign return value to Quantity, you can also use related factory's Create/CreateV as input function here
 func (t *recipeIngredientTrait) SetQuantityFactory(fn func(ctx context.Context) (float32, error)) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.quantityFactoryMutateFunc(fn))
 	return t
@@ -291,48 +327,79 @@ func (*recipeIngredientMutation) unitFactoryMutateFunc(fn func(ctx context.Conte
 	}
 }
 
+// SetUnitSequence register a function which accept a sequence counter and set return value to Unit field
 func (f *RecipeIngredientMetaFactory) SetUnitSequence(fn func(ctx context.Context, i int) (string, error)) *RecipeIngredientMetaFactory {
 	f.mutation.unitSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetUnitLazy register a function which accept the build struct and set return value to Unit field
 func (f *RecipeIngredientMetaFactory) SetUnitLazy(fn func(ctx context.Context, i *model.RecipeIngredient) (string, error)) *RecipeIngredientMetaFactory {
 	f.mutation.unitLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetUnitDefault assign a default value to Unit field
 func (f *RecipeIngredientMetaFactory) SetUnitDefault(v string) *RecipeIngredientMetaFactory {
 	f.mutation.unitDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetUnitFactory register a factory function and assign return value to Unit, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeIngredientMetaFactory) SetUnitFactory(fn func(ctx context.Context) (string, error)) *RecipeIngredientMetaFactory {
 	f.mutation.unitFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetUnitSequence register a function which accept a sequence counter and set return value to Unit field
 func (t *recipeIngredientTrait) SetUnitSequence(fn func(ctx context.Context, i int) (string, error)) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.unitSequenceMutateFunc(fn))
 	return t
 }
+
+// SetUnitLazy register a function which accept the build struct and set return value to Unit field
 func (t *recipeIngredientTrait) SetUnitLazy(fn func(ctx context.Context, i *model.RecipeIngredient) (string, error)) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.unitLazyMutateFunc(fn))
 	return t
 }
+
+// SetUnitDefault assign a default value to Unit field
 func (t *recipeIngredientTrait) SetUnitDefault(v string) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.unitDefaultMutateFunc(v))
 	return t
 }
+
+// SetUnitFactory register a factory function and assign return value to Unit, you can also use related factory's Create/CreateV as input function here
 func (t *recipeIngredientTrait) SetUnitFactory(fn func(ctx context.Context) (string, error)) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.unitFactoryMutateFunc(fn))
 	return t
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *RecipeIngredientMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *model.RecipeIngredient) error) *RecipeIngredientMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *RecipeIngredientMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.RecipeIngredient) error) *RecipeIngredientMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *recipeIngredientTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.RecipeIngredient) error) *recipeIngredientTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *recipeIngredientTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.RecipeIngredient) error) *recipeIngredientTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
+	return t
+}
+
+// Build create a  RecipeIngredientFactory from RecipeIngredientMetaFactory
 func (f *RecipeIngredientMetaFactory) Build() *RecipeIngredientFactory {
 	return &RecipeIngredientFactory{meta: *f, counter: &Counter{}}
 }
@@ -342,6 +409,7 @@ type RecipeIngredientFactory struct {
 	counter *Counter
 }
 
+// SetIngredient set the Ingredient field
 func (f *RecipeIngredientFactory) SetIngredient(i *model.Ingredient) *RecipeIngredientBuilder {
 	builder := &RecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetIngredient(i)
@@ -349,6 +417,7 @@ func (f *RecipeIngredientFactory) SetIngredient(i *model.Ingredient) *RecipeIngr
 	return builder
 }
 
+// SetQuantity set the Quantity field
 func (f *RecipeIngredientFactory) SetQuantity(i float32) *RecipeIngredientBuilder {
 	builder := &RecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetQuantity(i)
@@ -356,6 +425,7 @@ func (f *RecipeIngredientFactory) SetQuantity(i float32) *RecipeIngredientBuilde
 	return builder
 }
 
+// SetUnit set the Unit field
 func (f *RecipeIngredientFactory) SetUnit(i string) *RecipeIngredientBuilder {
 	builder := &RecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetUnit(i)
@@ -363,21 +433,28 @@ func (f *RecipeIngredientFactory) SetUnit(i string) *RecipeIngredientBuilder {
 	return builder
 }
 
+// Create return a new *model.RecipeIngredient
 func (f *RecipeIngredientFactory) Create(ctx context.Context) (*model.RecipeIngredient, error) {
 	builder := &RecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new model.RecipeIngredient
 func (f *RecipeIngredientFactory) CreateV(ctx context.Context) (model.RecipeIngredient, error) {
 	builder := &RecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*model.RecipeIngredient slice
 func (f *RecipeIngredientFactory) CreateBatch(ctx context.Context, n int) ([]*model.RecipeIngredient, error) {
 	builder := &RecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []model.RecipeIngredient slice
 func (f *RecipeIngredientFactory) CreateBatchV(ctx context.Context, n int) ([]model.RecipeIngredient, error) {
 	builder := &RecipeIngredientBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -399,24 +476,28 @@ type RecipeIngredientBuilder struct {
 	unitOverriden bool
 }
 
+// SetIngredient set the Ingredient field
 func (b *RecipeIngredientBuilder) SetIngredient(i *model.Ingredient) *RecipeIngredientBuilder {
 	b.ingredientOverride = i
 	b.ingredientOverriden = true
 	return b
 }
 
+// SetQuantity set the Quantity field
 func (b *RecipeIngredientBuilder) SetQuantity(i float32) *RecipeIngredientBuilder {
 	b.quantityOverride = i
 	b.quantityOverriden = true
 	return b
 }
 
+// SetUnit set the Unit field
 func (b *RecipeIngredientBuilder) SetUnit(i string) *RecipeIngredientBuilder {
 	b.unitOverride = i
 	b.unitOverriden = true
 	return b
 }
 
+// CreateV return a new model.RecipeIngredient
 func (b *RecipeIngredientBuilder) CreateV(ctx context.Context) (model.RecipeIngredient, error) {
 	var d model.RecipeIngredient
 	p, err := b.Create(ctx)
@@ -426,6 +507,7 @@ func (b *RecipeIngredientBuilder) CreateV(ctx context.Context) (model.RecipeIngr
 	return d, err
 }
 
+// Create return a new *model.RecipeIngredient
 func (b *RecipeIngredientBuilder) Create(ctx context.Context) (*model.RecipeIngredient, error) {
 
 	var preSlice = []func(ctx context.Context, i *model.RecipeIngredient, c int) error{}
@@ -496,6 +578,7 @@ func (b *RecipeIngredientBuilder) Create(ctx context.Context) (*model.RecipeIngr
 	}
 
 	v := &model.RecipeIngredient{}
+
 	for _, f := range preSlice {
 
 		err := f(ctx, v, index)
@@ -512,6 +595,11 @@ func (b *RecipeIngredientBuilder) Create(ctx context.Context) (*model.RecipeIngr
 			return nil, err
 		}
 	}
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
+			return nil, err
+		}
+	}
 
 	new := v
 
@@ -522,9 +610,7 @@ func (b *RecipeIngredientBuilder) Create(ctx context.Context) (*model.RecipeIngr
 		}
 	}
 	for _, f := range postSlice {
-
 		err := f(ctx, new, index)
-
 		if err != nil {
 			return nil, err
 		}

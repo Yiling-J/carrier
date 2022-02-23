@@ -62,10 +62,6 @@ func getStructFactory() *carrier.Factory {
 		SetMixnameTrait(factory.UserTrait().SetNameDefault("mix_name")).
 		SetMixemailTrait(factory.UserTrait().SetEmailDefault("mix_email").SetAfterCreateFunc(nil)).
 		SetMixtitleTrait(factory.UserTrait().SetTitleDefault("mix_title")).
-		SetBeforeCreateFunc(func(ctx context.Context) error {
-			// do nothing
-			return nil
-		}).
 		SetAfterCreateFunc(func(ctx context.Context, i *model.User) error {
 			i.Email = i.Email + ".com"
 			return nil
@@ -96,7 +92,7 @@ func getEntFactory() (*carrier.EntFactory, error) {
 			return fmt.Sprintf("group%d", i), nil
 		},
 	).
-		SetBeforeCreateFunc(func(ctx context.Context, creator *ent.GroupCreate) error {
+		SetBeforeCreateFunc(func(ctx context.Context, c *factory.EntGroupMutator) error {
 			user, err := client.User.Create().
 				SetAge(int(rand.Uint32())).
 				SetName("group-user").
@@ -104,7 +100,7 @@ func getEntFactory() (*carrier.EntFactory, error) {
 			if err != nil {
 				return err
 			}
-			creator.AddUsers(user)
+			c.EntCreator().AddUsers(user)
 			return nil
 		}).
 		SetAfterCreateFunc(func(ctx context.Context, i *ent.Group) error {

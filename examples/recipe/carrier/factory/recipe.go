@@ -33,7 +33,8 @@ type recipeMutation struct {
 
 	_postIngredientsCountFunc func(ctx context.Context, set bool, obj *model.Recipe, i int) error
 
-	afterCreateFunc func(ctx context.Context, i *model.Recipe) error
+	beforeCreateFunc func(ctx context.Context, i *model.Recipe) error
+	afterCreateFunc  func(ctx context.Context, i *model.Recipe) error
 }
 type RecipeMetaFactory struct {
 	mutation recipeMutation
@@ -49,6 +50,11 @@ type recipeTrait struct {
 
 func RecipeTrait() *recipeTrait {
 	return &recipeTrait{}
+}
+func (*recipeMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *model.Recipe) error) func(m *recipeMutation) {
+	return func(m *recipeMutation) {
+		m.beforeCreateFunc = fn
+	}
 }
 func (*recipeMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *model.Recipe) error) func(m *recipeMutation) {
 	return func(m *recipeMutation) {
@@ -119,34 +125,49 @@ func (*recipeMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (strin
 	}
 }
 
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (f *RecipeMetaFactory) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *RecipeMetaFactory {
 	f.mutation.nameSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (f *RecipeMetaFactory) SetNameLazy(fn func(ctx context.Context, i *model.Recipe) (string, error)) *RecipeMetaFactory {
 	f.mutation.nameLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameDefault assign a default value to Name field
 func (f *RecipeMetaFactory) SetNameDefault(v string) *RecipeMetaFactory {
 	f.mutation.nameDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeMetaFactory) SetNameFactory(fn func(ctx context.Context) (string, error)) *RecipeMetaFactory {
 	f.mutation.nameFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetNameSequence register a function which accept a sequence counter and set return value to Name field
 func (t *recipeTrait) SetNameSequence(fn func(ctx context.Context, i int) (string, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.nameSequenceMutateFunc(fn))
 	return t
 }
+
+// SetNameLazy register a function which accept the build struct and set return value to Name field
 func (t *recipeTrait) SetNameLazy(fn func(ctx context.Context, i *model.Recipe) (string, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.nameLazyMutateFunc(fn))
 	return t
 }
+
+// SetNameDefault assign a default value to Name field
 func (t *recipeTrait) SetNameDefault(v string) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.nameDefaultMutateFunc(v))
 	return t
 }
+
+// SetNameFactory register a factory function and assign return value to Name, you can also use related factory's Create/CreateV as input function here
 func (t *recipeTrait) SetNameFactory(fn func(ctx context.Context) (string, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.nameFactoryMutateFunc(fn))
 	return t
@@ -215,34 +236,49 @@ func (*recipeMutation) authorNameFactoryMutateFunc(fn func(ctx context.Context) 
 	}
 }
 
+// SetAuthorNameSequence register a function which accept a sequence counter and set return value to AuthorName field
 func (f *RecipeMetaFactory) SetAuthorNameSequence(fn func(ctx context.Context, i int) (string, error)) *RecipeMetaFactory {
 	f.mutation.authorNameSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetAuthorNameLazy register a function which accept the build struct and set return value to AuthorName field
 func (f *RecipeMetaFactory) SetAuthorNameLazy(fn func(ctx context.Context, i *model.Recipe) (string, error)) *RecipeMetaFactory {
 	f.mutation.authorNameLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetAuthorNameDefault assign a default value to AuthorName field
 func (f *RecipeMetaFactory) SetAuthorNameDefault(v string) *RecipeMetaFactory {
 	f.mutation.authorNameDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetAuthorNameFactory register a factory function and assign return value to AuthorName, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeMetaFactory) SetAuthorNameFactory(fn func(ctx context.Context) (string, error)) *RecipeMetaFactory {
 	f.mutation.authorNameFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetAuthorNameSequence register a function which accept a sequence counter and set return value to AuthorName field
 func (t *recipeTrait) SetAuthorNameSequence(fn func(ctx context.Context, i int) (string, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.authorNameSequenceMutateFunc(fn))
 	return t
 }
+
+// SetAuthorNameLazy register a function which accept the build struct and set return value to AuthorName field
 func (t *recipeTrait) SetAuthorNameLazy(fn func(ctx context.Context, i *model.Recipe) (string, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.authorNameLazyMutateFunc(fn))
 	return t
 }
+
+// SetAuthorNameDefault assign a default value to AuthorName field
 func (t *recipeTrait) SetAuthorNameDefault(v string) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.authorNameDefaultMutateFunc(v))
 	return t
 }
+
+// SetAuthorNameFactory register a factory function and assign return value to AuthorName, you can also use related factory's Create/CreateV as input function here
 func (t *recipeTrait) SetAuthorNameFactory(fn func(ctx context.Context) (string, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.authorNameFactoryMutateFunc(fn))
 	return t
@@ -311,34 +347,49 @@ func (*recipeMutation) servingsFactoryMutateFunc(fn func(ctx context.Context) (i
 	}
 }
 
+// SetServingsSequence register a function which accept a sequence counter and set return value to Servings field
 func (f *RecipeMetaFactory) SetServingsSequence(fn func(ctx context.Context, i int) (int, error)) *RecipeMetaFactory {
 	f.mutation.servingsSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetServingsLazy register a function which accept the build struct and set return value to Servings field
 func (f *RecipeMetaFactory) SetServingsLazy(fn func(ctx context.Context, i *model.Recipe) (int, error)) *RecipeMetaFactory {
 	f.mutation.servingsLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetServingsDefault assign a default value to Servings field
 func (f *RecipeMetaFactory) SetServingsDefault(v int) *RecipeMetaFactory {
 	f.mutation.servingsDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetServingsFactory register a factory function and assign return value to Servings, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeMetaFactory) SetServingsFactory(fn func(ctx context.Context) (int, error)) *RecipeMetaFactory {
 	f.mutation.servingsFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetServingsSequence register a function which accept a sequence counter and set return value to Servings field
 func (t *recipeTrait) SetServingsSequence(fn func(ctx context.Context, i int) (int, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.servingsSequenceMutateFunc(fn))
 	return t
 }
+
+// SetServingsLazy register a function which accept the build struct and set return value to Servings field
 func (t *recipeTrait) SetServingsLazy(fn func(ctx context.Context, i *model.Recipe) (int, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.servingsLazyMutateFunc(fn))
 	return t
 }
+
+// SetServingsDefault assign a default value to Servings field
 func (t *recipeTrait) SetServingsDefault(v int) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.servingsDefaultMutateFunc(v))
 	return t
 }
+
+// SetServingsFactory register a factory function and assign return value to Servings, you can also use related factory's Create/CreateV as input function here
 func (t *recipeTrait) SetServingsFactory(fn func(ctx context.Context) (int, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.servingsFactoryMutateFunc(fn))
 	return t
@@ -407,34 +458,49 @@ func (*recipeMutation) stepsFactoryMutateFunc(fn func(ctx context.Context) ([]*m
 	}
 }
 
+// SetStepsSequence register a function which accept a sequence counter and set return value to Steps field
 func (f *RecipeMetaFactory) SetStepsSequence(fn func(ctx context.Context, i int) ([]*model.RecipeStep, error)) *RecipeMetaFactory {
 	f.mutation.stepsSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetStepsLazy register a function which accept the build struct and set return value to Steps field
 func (f *RecipeMetaFactory) SetStepsLazy(fn func(ctx context.Context, i *model.Recipe) ([]*model.RecipeStep, error)) *RecipeMetaFactory {
 	f.mutation.stepsLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetStepsDefault assign a default value to Steps field
 func (f *RecipeMetaFactory) SetStepsDefault(v []*model.RecipeStep) *RecipeMetaFactory {
 	f.mutation.stepsDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetStepsFactory register a factory function and assign return value to Steps, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeMetaFactory) SetStepsFactory(fn func(ctx context.Context) ([]*model.RecipeStep, error)) *RecipeMetaFactory {
 	f.mutation.stepsFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetStepsSequence register a function which accept a sequence counter and set return value to Steps field
 func (t *recipeTrait) SetStepsSequence(fn func(ctx context.Context, i int) ([]*model.RecipeStep, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.stepsSequenceMutateFunc(fn))
 	return t
 }
+
+// SetStepsLazy register a function which accept the build struct and set return value to Steps field
 func (t *recipeTrait) SetStepsLazy(fn func(ctx context.Context, i *model.Recipe) ([]*model.RecipeStep, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.stepsLazyMutateFunc(fn))
 	return t
 }
+
+// SetStepsDefault assign a default value to Steps field
 func (t *recipeTrait) SetStepsDefault(v []*model.RecipeStep) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.stepsDefaultMutateFunc(v))
 	return t
 }
+
+// SetStepsFactory register a factory function and assign return value to Steps, you can also use related factory's Create/CreateV as input function here
 func (t *recipeTrait) SetStepsFactory(fn func(ctx context.Context) ([]*model.RecipeStep, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.stepsFactoryMutateFunc(fn))
 	return t
@@ -503,34 +569,49 @@ func (*recipeMutation) ingredientsFactoryMutateFunc(fn func(ctx context.Context)
 	}
 }
 
+// SetIngredientsSequence register a function which accept a sequence counter and set return value to Ingredients field
 func (f *RecipeMetaFactory) SetIngredientsSequence(fn func(ctx context.Context, i int) ([]*model.RecipeIngredient, error)) *RecipeMetaFactory {
 	f.mutation.ingredientsSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientsLazy register a function which accept the build struct and set return value to Ingredients field
 func (f *RecipeMetaFactory) SetIngredientsLazy(fn func(ctx context.Context, i *model.Recipe) ([]*model.RecipeIngredient, error)) *RecipeMetaFactory {
 	f.mutation.ingredientsLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientsDefault assign a default value to Ingredients field
 func (f *RecipeMetaFactory) SetIngredientsDefault(v []*model.RecipeIngredient) *RecipeMetaFactory {
 	f.mutation.ingredientsDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetIngredientsFactory register a factory function and assign return value to Ingredients, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeMetaFactory) SetIngredientsFactory(fn func(ctx context.Context) ([]*model.RecipeIngredient, error)) *RecipeMetaFactory {
 	f.mutation.ingredientsFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetIngredientsSequence register a function which accept a sequence counter and set return value to Ingredients field
 func (t *recipeTrait) SetIngredientsSequence(fn func(ctx context.Context, i int) ([]*model.RecipeIngredient, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.ingredientsSequenceMutateFunc(fn))
 	return t
 }
+
+// SetIngredientsLazy register a function which accept the build struct and set return value to Ingredients field
 func (t *recipeTrait) SetIngredientsLazy(fn func(ctx context.Context, i *model.Recipe) ([]*model.RecipeIngredient, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.ingredientsLazyMutateFunc(fn))
 	return t
 }
+
+// SetIngredientsDefault assign a default value to Ingredients field
 func (t *recipeTrait) SetIngredientsDefault(v []*model.RecipeIngredient) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.ingredientsDefaultMutateFunc(v))
 	return t
 }
+
+// SetIngredientsFactory register a factory function and assign return value to Ingredients, you can also use related factory's Create/CreateV as input function here
 func (t *recipeTrait) SetIngredientsFactory(fn func(ctx context.Context) ([]*model.RecipeIngredient, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.ingredientsFactoryMutateFunc(fn))
 	return t
@@ -599,34 +680,49 @@ func (*recipeMutation) tagsFactoryMutateFunc(fn func(ctx context.Context) ([]*mo
 	}
 }
 
+// SetTagsSequence register a function which accept a sequence counter and set return value to Tags field
 func (f *RecipeMetaFactory) SetTagsSequence(fn func(ctx context.Context, i int) ([]*model.Category, error)) *RecipeMetaFactory {
 	f.mutation.tagsSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetTagsLazy register a function which accept the build struct and set return value to Tags field
 func (f *RecipeMetaFactory) SetTagsLazy(fn func(ctx context.Context, i *model.Recipe) ([]*model.Category, error)) *RecipeMetaFactory {
 	f.mutation.tagsLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetTagsDefault assign a default value to Tags field
 func (f *RecipeMetaFactory) SetTagsDefault(v []*model.Category) *RecipeMetaFactory {
 	f.mutation.tagsDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetTagsFactory register a factory function and assign return value to Tags, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeMetaFactory) SetTagsFactory(fn func(ctx context.Context) ([]*model.Category, error)) *RecipeMetaFactory {
 	f.mutation.tagsFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetTagsSequence register a function which accept a sequence counter and set return value to Tags field
 func (t *recipeTrait) SetTagsSequence(fn func(ctx context.Context, i int) ([]*model.Category, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.tagsSequenceMutateFunc(fn))
 	return t
 }
+
+// SetTagsLazy register a function which accept the build struct and set return value to Tags field
 func (t *recipeTrait) SetTagsLazy(fn func(ctx context.Context, i *model.Recipe) ([]*model.Category, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.tagsLazyMutateFunc(fn))
 	return t
 }
+
+// SetTagsDefault assign a default value to Tags field
 func (t *recipeTrait) SetTagsDefault(v []*model.Category) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.tagsDefaultMutateFunc(v))
 	return t
 }
+
+// SetTagsFactory register a factory function and assign return value to Tags, you can also use related factory's Create/CreateV as input function here
 func (t *recipeTrait) SetTagsFactory(fn func(ctx context.Context) ([]*model.Category, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.tagsFactoryMutateFunc(fn))
 	return t
@@ -695,34 +791,49 @@ func (*recipeMutation) relatedFactoryMutateFunc(fn func(ctx context.Context) ([]
 	}
 }
 
+// SetRelatedSequence register a function which accept a sequence counter and set return value to Related field
 func (f *RecipeMetaFactory) SetRelatedSequence(fn func(ctx context.Context, i int) ([]*model.Recipe, error)) *RecipeMetaFactory {
 	f.mutation.relatedSequenceMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetRelatedLazy register a function which accept the build struct and set return value to Related field
 func (f *RecipeMetaFactory) SetRelatedLazy(fn func(ctx context.Context, i *model.Recipe) ([]*model.Recipe, error)) *RecipeMetaFactory {
 	f.mutation.relatedLazyMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetRelatedDefault assign a default value to Related field
 func (f *RecipeMetaFactory) SetRelatedDefault(v []*model.Recipe) *RecipeMetaFactory {
 	f.mutation.relatedDefaultMutateFunc(v)(&f.mutation)
 	return f
 }
+
+// SetRelatedFactory register a factory function and assign return value to Related, you can also use related factory's Create/CreateV as input function here
 func (f *RecipeMetaFactory) SetRelatedFactory(fn func(ctx context.Context) ([]*model.Recipe, error)) *RecipeMetaFactory {
 	f.mutation.relatedFactoryMutateFunc(fn)(&f.mutation)
 	return f
 }
+
+// SetRelatedSequence register a function which accept a sequence counter and set return value to Related field
 func (t *recipeTrait) SetRelatedSequence(fn func(ctx context.Context, i int) ([]*model.Recipe, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.relatedSequenceMutateFunc(fn))
 	return t
 }
+
+// SetRelatedLazy register a function which accept the build struct and set return value to Related field
 func (t *recipeTrait) SetRelatedLazy(fn func(ctx context.Context, i *model.Recipe) ([]*model.Recipe, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.relatedLazyMutateFunc(fn))
 	return t
 }
+
+// SetRelatedDefault assign a default value to Related field
 func (t *recipeTrait) SetRelatedDefault(v []*model.Recipe) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.relatedDefaultMutateFunc(v))
 	return t
 }
+
+// SetRelatedFactory register a factory function and assign return value to Related, you can also use related factory's Create/CreateV as input function here
 func (t *recipeTrait) SetRelatedFactory(fn func(ctx context.Context) ([]*model.Recipe, error)) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.relatedFactoryMutateFunc(fn))
 	return t
@@ -733,6 +844,8 @@ func (*recipeMutation) stepsCountPostMutateFunc(fn func(ctx context.Context, set
 		m._postStepsCountFunc = fn
 	}
 }
+
+// SetStepsCountPostFunc register a post function which will be called in factory SetStepsCountPost method
 func (f *RecipeMetaFactory) SetStepsCountPostFunc(fn func(ctx context.Context, set bool, obj *model.Recipe, i int) error) *RecipeMetaFactory {
 	f.mutation.stepsCountPostMutateFunc(fn)(&f.mutation)
 	return f
@@ -747,6 +860,8 @@ func (*recipeMutation) ingredientsCountPostMutateFunc(fn func(ctx context.Contex
 		m._postIngredientsCountFunc = fn
 	}
 }
+
+// SetIngredientsCountPostFunc register a post function which will be called in factory SetIngredientsCountPost method
 func (f *RecipeMetaFactory) SetIngredientsCountPostFunc(fn func(ctx context.Context, set bool, obj *model.Recipe, i int) error) *RecipeMetaFactory {
 	f.mutation.ingredientsCountPostMutateFunc(fn)(&f.mutation)
 	return f
@@ -756,25 +871,43 @@ func (t *recipeTrait) SetIngredientsCountPostFunc(fn func(ctx context.Context, s
 	return t
 }
 
+// SetVeganTrait accept a recipeTrait, will override builder using Trait's methods if enable
 func (f *RecipeMetaFactory) SetVeganTrait(t *recipeTrait) *RecipeMetaFactory {
 	f.veganTrait = t
 	return f
 }
 
+// SetKetoTrait accept a recipeTrait, will override builder using Trait's methods if enable
 func (f *RecipeMetaFactory) SetKetoTrait(t *recipeTrait) *RecipeMetaFactory {
 	f.ketoTrait = t
 	return f
 }
 
+// SetAfterCreateFunc register a function to be called after struct create
 func (f *RecipeMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Recipe) error) *RecipeMetaFactory {
 	f.mutation.afterCreateFunc = fn
 	return f
 }
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *RecipeMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Recipe) error) *RecipeMetaFactory {
+	f.mutation.beforeCreateFunc = fn
+	return f
+}
+
+// SetAfterCreateFunc register a function to be called after struct create
 func (t *recipeTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Recipe) error) *recipeTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
 	return t
 }
 
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *recipeTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Recipe) error) *recipeTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
+	return t
+}
+
+// Build create a  RecipeFactory from RecipeMetaFactory
 func (f *RecipeMetaFactory) Build() *RecipeFactory {
 	return &RecipeFactory{meta: *f, counter: &Counter{}}
 }
@@ -784,6 +917,7 @@ type RecipeFactory struct {
 	counter *Counter
 }
 
+// SetName set the Name field
 func (f *RecipeFactory) SetName(i string) *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetName(i)
@@ -791,6 +925,7 @@ func (f *RecipeFactory) SetName(i string) *RecipeBuilder {
 	return builder
 }
 
+// SetAuthorName set the AuthorName field
 func (f *RecipeFactory) SetAuthorName(i string) *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetAuthorName(i)
@@ -798,6 +933,7 @@ func (f *RecipeFactory) SetAuthorName(i string) *RecipeBuilder {
 	return builder
 }
 
+// SetServings set the Servings field
 func (f *RecipeFactory) SetServings(i int) *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetServings(i)
@@ -805,6 +941,7 @@ func (f *RecipeFactory) SetServings(i int) *RecipeBuilder {
 	return builder
 }
 
+// SetSteps set the Steps field
 func (f *RecipeFactory) SetSteps(i []*model.RecipeStep) *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetSteps(i)
@@ -812,6 +949,7 @@ func (f *RecipeFactory) SetSteps(i []*model.RecipeStep) *RecipeBuilder {
 	return builder
 }
 
+// SetIngredients set the Ingredients field
 func (f *RecipeFactory) SetIngredients(i []*model.RecipeIngredient) *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetIngredients(i)
@@ -819,6 +957,7 @@ func (f *RecipeFactory) SetIngredients(i []*model.RecipeIngredient) *RecipeBuild
 	return builder
 }
 
+// SetTags set the Tags field
 func (f *RecipeFactory) SetTags(i []*model.Category) *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetTags(i)
@@ -826,6 +965,7 @@ func (f *RecipeFactory) SetTags(i []*model.Category) *RecipeBuilder {
 	return builder
 }
 
+// SetRelated set the Related field
 func (f *RecipeFactory) SetRelated(i []*model.Recipe) *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetRelated(i)
@@ -833,6 +973,7 @@ func (f *RecipeFactory) SetRelated(i []*model.Recipe) *RecipeBuilder {
 	return builder
 }
 
+// SetStepsCountPost call the post function with int input
 func (f *RecipeFactory) SetStepsCountPost(i int) *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetStepsCountPost(i)
@@ -840,6 +981,7 @@ func (f *RecipeFactory) SetStepsCountPost(i int) *RecipeBuilder {
 	return builder
 }
 
+// SetIngredientsCountPost call the post function with int input
 func (f *RecipeFactory) SetIngredientsCountPost(i int) *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 	builder.SetIngredientsCountPost(i)
@@ -847,6 +989,7 @@ func (f *RecipeFactory) SetIngredientsCountPost(i int) *RecipeBuilder {
 	return builder
 }
 
+// WithVeganTrait() enable the Vegan trait
 func (f *RecipeFactory) WithVeganTrait() *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -860,6 +1003,7 @@ func (f *RecipeFactory) WithVeganTrait() *RecipeBuilder {
 	return builder
 }
 
+// WithKetoTrait() enable the Keto trait
 func (f *RecipeFactory) WithKetoTrait() *RecipeBuilder {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter}
 	builder.factory = f
@@ -873,21 +1017,28 @@ func (f *RecipeFactory) WithKetoTrait() *RecipeBuilder {
 	return builder
 }
 
+// Create return a new *model.Recipe
 func (f *RecipeFactory) Create(ctx context.Context) (*model.Recipe, error) {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.Create(ctx)
 }
+
+// CreateV return a new model.Recipe
 func (f *RecipeFactory) CreateV(ctx context.Context) (model.Recipe, error) {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateV(ctx)
 }
+
+// CreateBatch return a []*model.Recipe slice
 func (f *RecipeFactory) CreateBatch(ctx context.Context, n int) ([]*model.Recipe, error) {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
 	return builder.CreateBatch(ctx, n)
 }
+
+// CreateBatchV return a []model.Recipe slice
 func (f *RecipeFactory) CreateBatchV(ctx context.Context, n int) ([]model.Recipe, error) {
 	builder := &RecipeBuilder{mutation: f.meta.mutation, counter: f.counter, factory: f}
 
@@ -927,60 +1078,70 @@ type RecipeBuilder struct {
 	_postIngredientsCountSet bool
 }
 
+// SetName set the Name field
 func (b *RecipeBuilder) SetName(i string) *RecipeBuilder {
 	b.nameOverride = i
 	b.nameOverriden = true
 	return b
 }
 
+// SetAuthorName set the AuthorName field
 func (b *RecipeBuilder) SetAuthorName(i string) *RecipeBuilder {
 	b.authorNameOverride = i
 	b.authorNameOverriden = true
 	return b
 }
 
+// SetServings set the Servings field
 func (b *RecipeBuilder) SetServings(i int) *RecipeBuilder {
 	b.servingsOverride = i
 	b.servingsOverriden = true
 	return b
 }
 
+// SetSteps set the Steps field
 func (b *RecipeBuilder) SetSteps(i []*model.RecipeStep) *RecipeBuilder {
 	b.stepsOverride = i
 	b.stepsOverriden = true
 	return b
 }
 
+// SetIngredients set the Ingredients field
 func (b *RecipeBuilder) SetIngredients(i []*model.RecipeIngredient) *RecipeBuilder {
 	b.ingredientsOverride = i
 	b.ingredientsOverriden = true
 	return b
 }
 
+// SetTags set the Tags field
 func (b *RecipeBuilder) SetTags(i []*model.Category) *RecipeBuilder {
 	b.tagsOverride = i
 	b.tagsOverriden = true
 	return b
 }
 
+// SetRelated set the Related field
 func (b *RecipeBuilder) SetRelated(i []*model.Recipe) *RecipeBuilder {
 	b.relatedOverride = i
 	b.relatedOverriden = true
 	return b
 }
 
+// SetStepsCountPost call the post function with int input
 func (b *RecipeBuilder) SetStepsCountPost(i int) *RecipeBuilder {
 	b._postStepsCount = i
 	b._postStepsCountSet = true
 	return b
 }
 
+// SetIngredientsCountPost call the post function with int input
 func (b *RecipeBuilder) SetIngredientsCountPost(i int) *RecipeBuilder {
 	b._postIngredientsCount = i
 	b._postIngredientsCountSet = true
 	return b
 }
 
+// WithVeganTrait() enable the Vegan trait
 func (b *RecipeBuilder) WithVeganTrait() *RecipeBuilder {
 	if b.factory.meta.veganTrait == nil {
 		return b
@@ -991,6 +1152,7 @@ func (b *RecipeBuilder) WithVeganTrait() *RecipeBuilder {
 	return b
 }
 
+// WithKetoTrait() enable the Keto trait
 func (b *RecipeBuilder) WithKetoTrait() *RecipeBuilder {
 	if b.factory.meta.ketoTrait == nil {
 		return b
@@ -1001,6 +1163,7 @@ func (b *RecipeBuilder) WithKetoTrait() *RecipeBuilder {
 	return b
 }
 
+// CreateV return a new model.Recipe
 func (b *RecipeBuilder) CreateV(ctx context.Context) (model.Recipe, error) {
 	var d model.Recipe
 	p, err := b.Create(ctx)
@@ -1010,6 +1173,7 @@ func (b *RecipeBuilder) CreateV(ctx context.Context) (model.Recipe, error) {
 	return d, err
 }
 
+// Create return a new *model.Recipe
 func (b *RecipeBuilder) Create(ctx context.Context) (*model.Recipe, error) {
 
 	var preSlice = []func(ctx context.Context, i *model.Recipe, c int) error{}
@@ -1174,6 +1338,7 @@ func (b *RecipeBuilder) Create(ctx context.Context) (*model.Recipe, error) {
 	}
 
 	v := &model.Recipe{}
+
 	for _, f := range preSlice {
 
 		err := f(ctx, v, index)
@@ -1190,6 +1355,11 @@ func (b *RecipeBuilder) Create(ctx context.Context) (*model.Recipe, error) {
 			return nil, err
 		}
 	}
+	if b.mutation.beforeCreateFunc != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
+			return nil, err
+		}
+	}
 
 	new := v
 
@@ -1200,9 +1370,7 @@ func (b *RecipeBuilder) Create(ctx context.Context) (*model.Recipe, error) {
 		}
 	}
 	for _, f := range postSlice {
-
 		err := f(ctx, new, index)
-
 		if err != nil {
 			return nil, err
 		}

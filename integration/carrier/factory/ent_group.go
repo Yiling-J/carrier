@@ -9,13 +9,19 @@ import (
 
 type EntGroupMutator struct {
 	Name string
+
+	_creator *ent.GroupCreate
+}
+
+func (m *EntGroupMutator) EntCreator() *ent.GroupCreate {
+	return m._creator
 }
 
 type entGroupMutation struct {
 	nameType int
-	nameFunc func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error
+	nameFunc func(ctx context.Context, i *EntGroupMutator, c int) error
 
-	beforeCreateFunc func(ctx context.Context, creator *ent.GroupCreate) error
+	beforeCreateFunc func(ctx context.Context, i *EntGroupMutator) error
 	afterCreateFunc  func(ctx context.Context, i *ent.Group) error
 }
 type EntGroupMetaFactory struct {
@@ -31,6 +37,11 @@ type entGroupTrait struct {
 func EntGroupTrait() *entGroupTrait {
 	return &entGroupTrait{}
 }
+func (*entGroupMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *EntGroupMutator) error) func(m *entGroupMutation) {
+	return func(m *entGroupMutation) {
+		m.beforeCreateFunc = fn
+	}
+}
 func (*entGroupMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *ent.Group) error) func(m *entGroupMutation) {
 	return func(m *entGroupMutation) {
 		m.afterCreateFunc = fn
@@ -40,7 +51,7 @@ func (*entGroupMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *e
 func (*entGroupMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i int) (string, error)) func(m *entGroupMutation) {
 	return func(m *entGroupMutation) {
 		m.nameType = TypeSequence
-		m.nameFunc = func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error {
+		m.nameFunc = func(ctx context.Context, i *EntGroupMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -49,7 +60,7 @@ func (*entGroupMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i i
 				return err
 			}
 
-			creator.SetName(value)
+			i.EntCreator().SetName(value)
 
 			i.Name = value
 			return nil
@@ -59,7 +70,7 @@ func (*entGroupMutation) nameSequenceMutateFunc(fn func(ctx context.Context, i i
 func (*entGroupMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *EntGroupMutator) (string, error)) func(m *entGroupMutation) {
 	return func(m *entGroupMutation) {
 		m.nameType = TypeLazy
-		m.nameFunc = func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error {
+		m.nameFunc = func(ctx context.Context, i *EntGroupMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -68,7 +79,7 @@ func (*entGroupMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *EntG
 				return err
 			}
 
-			creator.SetName(value)
+			i.EntCreator().SetName(value)
 
 			i.Name = value
 			return nil
@@ -78,9 +89,9 @@ func (*entGroupMutation) nameLazyMutateFunc(fn func(ctx context.Context, i *EntG
 func (*entGroupMutation) nameDefaultMutateFunc(v string) func(m *entGroupMutation) {
 	return func(m *entGroupMutation) {
 		m.nameType = TypeDefault
-		m.nameFunc = func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error {
+		m.nameFunc = func(ctx context.Context, i *EntGroupMutator, c int) error {
 
-			creator.SetName(v)
+			i.EntCreator().SetName(v)
 
 			i.Name = v
 			return nil
@@ -90,7 +101,7 @@ func (*entGroupMutation) nameDefaultMutateFunc(v string) func(m *entGroupMutatio
 func (*entGroupMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (string, error)) func(m *entGroupMutation) {
 	return func(m *entGroupMutation) {
 		m.nameType = TypeFactory
-		m.nameFunc = func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error {
+		m.nameFunc = func(ctx context.Context, i *EntGroupMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -99,7 +110,7 @@ func (*entGroupMutation) nameFactoryMutateFunc(fn func(ctx context.Context) (str
 				return err
 			}
 
-			creator.SetName(value)
+			i.EntCreator().SetName(value)
 
 			i.Name = value
 
@@ -168,8 +179,8 @@ func (f *EntGroupMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i 
 	return f
 }
 
-// SetBeforeCreateFunc register a function to be called after struct create
-func (f *EntGroupMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, creator *ent.GroupCreate) error) *EntGroupMetaFactory {
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *EntGroupMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *EntGroupMutator) error) *EntGroupMetaFactory {
 	f.mutation.beforeCreateFunc = fn
 	return f
 }
@@ -177,6 +188,12 @@ func (f *EntGroupMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, c
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *entGroupTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Group) error) *entGroupTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *entGroupTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *EntGroupMutator) error) *entGroupTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
 	return t
 }
 
@@ -307,9 +324,9 @@ func (b *EntGroupBuilder) CreateV(ctx context.Context) (ent.Group, error) {
 // Create return a new *ent.Group
 func (b *EntGroupBuilder) Create(ctx context.Context) (*ent.Group, error) {
 
-	var preSlice = []func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error{}
-	var lazySlice = []func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error{}
-	var postSlice = []func(ctx context.Context, i *ent.Group, c int, creator *ent.GroupCreate) error{}
+	var preSlice = []func(ctx context.Context, i *EntGroupMutator, c int) error{}
+	var lazySlice = []func(ctx context.Context, i *EntGroupMutator, c int) error{}
+	var postSlice = []func(ctx context.Context, i *ent.Group, c int) error{}
 
 	index := b.counter.Get()
 	_ = index
@@ -318,10 +335,10 @@ func (b *EntGroupBuilder) Create(ctx context.Context) (*ent.Group, error) {
 	entBuilder := client.Group.Create()
 
 	if b.nameOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntGroupMutator, c int, creator *ent.GroupCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntGroupMutator, c int) error {
 			value := b.nameOverride
 
-			creator.SetName(value)
+			i.EntCreator().SetName(value)
 
 			i.Name = value
 			return nil
@@ -340,9 +357,12 @@ func (b *EntGroupBuilder) Create(ctx context.Context) (*ent.Group, error) {
 	}
 
 	v := &EntGroupMutator{}
+
+	v._creator = entBuilder
+
 	for _, f := range preSlice {
 
-		err := f(ctx, v, index, entBuilder)
+		err := f(ctx, v, index)
 
 		if err != nil {
 			return nil, err
@@ -350,18 +370,18 @@ func (b *EntGroupBuilder) Create(ctx context.Context) (*ent.Group, error) {
 	}
 	for _, f := range lazySlice {
 
-		err := f(ctx, v, index, entBuilder)
+		err := f(ctx, v, index)
 
 		if err != nil {
 			return nil, err
 		}
 	}
-
 	if b.mutation.beforeCreateFunc != nil {
-		if err := b.mutation.beforeCreateFunc(ctx, entBuilder); err != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
 			return nil, err
 		}
 	}
+
 	new, err := entBuilder.Save(ctx)
 	if err != nil {
 		return nil, err
@@ -374,9 +394,7 @@ func (b *EntGroupBuilder) Create(ctx context.Context) (*ent.Group, error) {
 		}
 	}
 	for _, f := range postSlice {
-
-		err := f(ctx, new, index, entBuilder)
-
+		err := f(ctx, new, index)
 		if err != nil {
 			return nil, err
 		}

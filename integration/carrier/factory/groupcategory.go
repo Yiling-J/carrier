@@ -11,7 +11,7 @@ type groupCategoryMutation struct {
 	nameType int
 	nameFunc func(ctx context.Context, i *model.GroupCategory, c int) error
 
-	beforeCreateFunc func(ctx context.Context) error
+	beforeCreateFunc func(ctx context.Context, i *model.GroupCategory) error
 	afterCreateFunc  func(ctx context.Context, i *model.GroupCategory) error
 }
 type GroupCategoryMetaFactory struct {
@@ -24,6 +24,11 @@ type groupCategoryTrait struct {
 
 func GroupCategoryTrait() *groupCategoryTrait {
 	return &groupCategoryTrait{}
+}
+func (*groupCategoryMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *model.GroupCategory) error) func(m *groupCategoryMutation) {
+	return func(m *groupCategoryMutation) {
+		m.beforeCreateFunc = fn
+	}
 }
 func (*groupCategoryMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *model.GroupCategory) error) func(m *groupCategoryMutation) {
 	return func(m *groupCategoryMutation) {
@@ -148,8 +153,8 @@ func (f *GroupCategoryMetaFactory) SetAfterCreateFunc(fn func(ctx context.Contex
 	return f
 }
 
-// SetBeforeCreateFunc register a function to be called after struct create
-func (f *GroupCategoryMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error) *GroupCategoryMetaFactory {
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *GroupCategoryMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.GroupCategory) error) *GroupCategoryMetaFactory {
 	f.mutation.beforeCreateFunc = fn
 	return f
 }
@@ -157,6 +162,12 @@ func (f *GroupCategoryMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Conte
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *groupCategoryTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.GroupCategory) error) *groupCategoryTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *groupCategoryTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.GroupCategory) error) *groupCategoryTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
 	return t
 }
 
@@ -263,6 +274,7 @@ func (b *GroupCategoryBuilder) Create(ctx context.Context) (*model.GroupCategory
 	}
 
 	v := &model.GroupCategory{}
+
 	for _, f := range preSlice {
 
 		err := f(ctx, v, index)
@@ -279,12 +291,12 @@ func (b *GroupCategoryBuilder) Create(ctx context.Context) (*model.GroupCategory
 			return nil, err
 		}
 	}
-
 	if b.mutation.beforeCreateFunc != nil {
-		if err := b.mutation.beforeCreateFunc(ctx); err != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
 			return nil, err
 		}
 	}
+
 	new := v
 
 	if b.mutation.afterCreateFunc != nil {
@@ -294,9 +306,7 @@ func (b *GroupCategoryBuilder) Create(ctx context.Context) (*model.GroupCategory
 		}
 	}
 	for _, f := range postSlice {
-
 		err := f(ctx, new, index)
-
 		if err != nil {
 			return nil, err
 		}

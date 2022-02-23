@@ -14,7 +14,7 @@ type foodMutation struct {
 	categoryType int
 	categoryFunc func(ctx context.Context, i *model.Food, c int) error
 
-	beforeCreateFunc func(ctx context.Context) error
+	beforeCreateFunc func(ctx context.Context, i *model.Food) error
 	afterCreateFunc  func(ctx context.Context, i *model.Food) error
 }
 type FoodMetaFactory struct {
@@ -27,6 +27,11 @@ type foodTrait struct {
 
 func FoodTrait() *foodTrait {
 	return &foodTrait{}
+}
+func (*foodMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *model.Food) error) func(m *foodMutation) {
+	return func(m *foodMutation) {
+		m.beforeCreateFunc = fn
+	}
 }
 func (*foodMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *model.Food) error) func(m *foodMutation) {
 	return func(m *foodMutation) {
@@ -262,8 +267,8 @@ func (f *FoodMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *mod
 	return f
 }
 
-// SetBeforeCreateFunc register a function to be called after struct create
-func (f *FoodMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error) *FoodMetaFactory {
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *FoodMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Food) error) *FoodMetaFactory {
 	f.mutation.beforeCreateFunc = fn
 	return f
 }
@@ -271,6 +276,12 @@ func (f *FoodMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context) error
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *foodTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *model.Food) error) *foodTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *foodTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *model.Food) error) *foodTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
 	return t
 }
 
@@ -415,6 +426,7 @@ func (b *FoodBuilder) Create(ctx context.Context) (*model.Food, error) {
 	}
 
 	v := &model.Food{}
+
 	for _, f := range preSlice {
 
 		err := f(ctx, v, index)
@@ -431,12 +443,12 @@ func (b *FoodBuilder) Create(ctx context.Context) (*model.Food, error) {
 			return nil, err
 		}
 	}
-
 	if b.mutation.beforeCreateFunc != nil {
-		if err := b.mutation.beforeCreateFunc(ctx); err != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
 			return nil, err
 		}
 	}
+
 	new := v
 
 	if b.mutation.afterCreateFunc != nil {
@@ -446,9 +458,7 @@ func (b *FoodBuilder) Create(ctx context.Context) (*model.Food, error) {
 		}
 	}
 	for _, f := range postSlice {
-
 		err := f(ctx, new, index)
-
 		if err != nil {
 			return nil, err
 		}

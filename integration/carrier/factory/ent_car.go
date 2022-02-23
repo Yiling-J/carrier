@@ -17,22 +17,28 @@ type EntCarMutator struct {
 	OwnerID int
 
 	RegisteredAt time.Time
+
+	_creator *ent.CarCreate
+}
+
+func (m *EntCarMutator) EntCreator() *ent.CarCreate {
+	return m._creator
 }
 
 type entCarMutation struct {
 	modelType int
-	modelFunc func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error
+	modelFunc func(ctx context.Context, i *EntCarMutator, c int) error
 
 	ownerType int
-	ownerFunc func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error
+	ownerFunc func(ctx context.Context, i *EntCarMutator, c int) error
 
 	ownerIDType int
-	ownerIDFunc func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error
+	ownerIDFunc func(ctx context.Context, i *EntCarMutator, c int) error
 
 	registeredAtType int
-	registeredAtFunc func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error
+	registeredAtFunc func(ctx context.Context, i *EntCarMutator, c int) error
 
-	beforeCreateFunc func(ctx context.Context, creator *ent.CarCreate) error
+	beforeCreateFunc func(ctx context.Context, i *EntCarMutator) error
 	afterCreateFunc  func(ctx context.Context, i *ent.Car) error
 }
 type EntCarMetaFactory struct {
@@ -46,6 +52,11 @@ type entCarTrait struct {
 func EntCarTrait() *entCarTrait {
 	return &entCarTrait{}
 }
+func (*entCarMutation) beforeCreateMutateFunc(fn func(ctx context.Context, i *EntCarMutator) error) func(m *entCarMutation) {
+	return func(m *entCarMutation) {
+		m.beforeCreateFunc = fn
+	}
+}
 func (*entCarMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *ent.Car) error) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.afterCreateFunc = fn
@@ -55,7 +66,7 @@ func (*entCarMutation) afterCreateMutateFunc(fn func(ctx context.Context, i *ent
 func (*entCarMutation) modelSequenceMutateFunc(fn func(ctx context.Context, i int) (string, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.modelType = TypeSequence
-		m.modelFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.modelFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -64,7 +75,7 @@ func (*entCarMutation) modelSequenceMutateFunc(fn func(ctx context.Context, i in
 				return err
 			}
 
-			creator.SetModel(value)
+			i.EntCreator().SetModel(value)
 
 			i.Model = value
 			return nil
@@ -74,7 +85,7 @@ func (*entCarMutation) modelSequenceMutateFunc(fn func(ctx context.Context, i in
 func (*entCarMutation) modelLazyMutateFunc(fn func(ctx context.Context, i *EntCarMutator) (string, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.modelType = TypeLazy
-		m.modelFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.modelFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -83,7 +94,7 @@ func (*entCarMutation) modelLazyMutateFunc(fn func(ctx context.Context, i *EntCa
 				return err
 			}
 
-			creator.SetModel(value)
+			i.EntCreator().SetModel(value)
 
 			i.Model = value
 			return nil
@@ -93,9 +104,9 @@ func (*entCarMutation) modelLazyMutateFunc(fn func(ctx context.Context, i *EntCa
 func (*entCarMutation) modelDefaultMutateFunc(v string) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.modelType = TypeDefault
-		m.modelFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.modelFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 
-			creator.SetModel(v)
+			i.EntCreator().SetModel(v)
 
 			i.Model = v
 			return nil
@@ -105,7 +116,7 @@ func (*entCarMutation) modelDefaultMutateFunc(v string) func(m *entCarMutation) 
 func (*entCarMutation) modelFactoryMutateFunc(fn func(ctx context.Context) (string, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.modelType = TypeFactory
-		m.modelFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.modelFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -114,7 +125,7 @@ func (*entCarMutation) modelFactoryMutateFunc(fn func(ctx context.Context) (stri
 				return err
 			}
 
-			creator.SetModel(value)
+			i.EntCreator().SetModel(value)
 
 			i.Model = value
 
@@ -174,7 +185,7 @@ func (t *entCarTrait) SetModelFactory(fn func(ctx context.Context) (string, erro
 func (*entCarMutation) ownerSequenceMutateFunc(fn func(ctx context.Context, i int) (*ent.User, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.ownerType = TypeSequence
-		m.ownerFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.ownerFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -183,7 +194,7 @@ func (*entCarMutation) ownerSequenceMutateFunc(fn func(ctx context.Context, i in
 				return err
 			}
 
-			creator.SetOwner(value)
+			i.EntCreator().SetOwner(value)
 
 			i.Owner = value
 			return nil
@@ -193,7 +204,7 @@ func (*entCarMutation) ownerSequenceMutateFunc(fn func(ctx context.Context, i in
 func (*entCarMutation) ownerLazyMutateFunc(fn func(ctx context.Context, i *EntCarMutator) (*ent.User, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.ownerType = TypeLazy
-		m.ownerFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.ownerFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -202,7 +213,7 @@ func (*entCarMutation) ownerLazyMutateFunc(fn func(ctx context.Context, i *EntCa
 				return err
 			}
 
-			creator.SetOwner(value)
+			i.EntCreator().SetOwner(value)
 
 			i.Owner = value
 			return nil
@@ -212,9 +223,9 @@ func (*entCarMutation) ownerLazyMutateFunc(fn func(ctx context.Context, i *EntCa
 func (*entCarMutation) ownerDefaultMutateFunc(v *ent.User) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.ownerType = TypeDefault
-		m.ownerFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.ownerFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 
-			creator.SetOwner(v)
+			i.EntCreator().SetOwner(v)
 
 			i.Owner = v
 			return nil
@@ -224,7 +235,7 @@ func (*entCarMutation) ownerDefaultMutateFunc(v *ent.User) func(m *entCarMutatio
 func (*entCarMutation) ownerFactoryMutateFunc(fn func(ctx context.Context) (*ent.User, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.ownerType = TypeFactory
-		m.ownerFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.ownerFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -233,7 +244,7 @@ func (*entCarMutation) ownerFactoryMutateFunc(fn func(ctx context.Context) (*ent
 				return err
 			}
 
-			creator.SetOwner(value)
+			i.EntCreator().SetOwner(value)
 
 			i.Owner = value
 
@@ -293,7 +304,7 @@ func (t *entCarTrait) SetOwnerFactory(fn func(ctx context.Context) (*ent.User, e
 func (*entCarMutation) ownerIDSequenceMutateFunc(fn func(ctx context.Context, i int) (int, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.ownerIDType = TypeSequence
-		m.ownerIDFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.ownerIDFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -302,7 +313,7 @@ func (*entCarMutation) ownerIDSequenceMutateFunc(fn func(ctx context.Context, i 
 				return err
 			}
 
-			creator.SetOwnerID(value)
+			i.EntCreator().SetOwnerID(value)
 
 			i.OwnerID = value
 			return nil
@@ -312,7 +323,7 @@ func (*entCarMutation) ownerIDSequenceMutateFunc(fn func(ctx context.Context, i 
 func (*entCarMutation) ownerIDLazyMutateFunc(fn func(ctx context.Context, i *EntCarMutator) (int, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.ownerIDType = TypeLazy
-		m.ownerIDFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.ownerIDFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -321,7 +332,7 @@ func (*entCarMutation) ownerIDLazyMutateFunc(fn func(ctx context.Context, i *Ent
 				return err
 			}
 
-			creator.SetOwnerID(value)
+			i.EntCreator().SetOwnerID(value)
 
 			i.OwnerID = value
 			return nil
@@ -331,9 +342,9 @@ func (*entCarMutation) ownerIDLazyMutateFunc(fn func(ctx context.Context, i *Ent
 func (*entCarMutation) ownerIDDefaultMutateFunc(v int) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.ownerIDType = TypeDefault
-		m.ownerIDFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.ownerIDFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 
-			creator.SetOwnerID(v)
+			i.EntCreator().SetOwnerID(v)
 
 			i.OwnerID = v
 			return nil
@@ -343,7 +354,7 @@ func (*entCarMutation) ownerIDDefaultMutateFunc(v int) func(m *entCarMutation) {
 func (*entCarMutation) ownerIDFactoryMutateFunc(fn func(ctx context.Context) (int, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.ownerIDType = TypeFactory
-		m.ownerIDFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.ownerIDFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -352,7 +363,7 @@ func (*entCarMutation) ownerIDFactoryMutateFunc(fn func(ctx context.Context) (in
 				return err
 			}
 
-			creator.SetOwnerID(value)
+			i.EntCreator().SetOwnerID(value)
 
 			i.OwnerID = value
 
@@ -412,7 +423,7 @@ func (t *entCarTrait) SetOwnerIDFactory(fn func(ctx context.Context) (int, error
 func (*entCarMutation) registeredAtSequenceMutateFunc(fn func(ctx context.Context, i int) (time.Time, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.registeredAtType = TypeSequence
-		m.registeredAtFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.registeredAtFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -421,7 +432,7 @@ func (*entCarMutation) registeredAtSequenceMutateFunc(fn func(ctx context.Contex
 				return err
 			}
 
-			creator.SetRegisteredAt(value)
+			i.EntCreator().SetRegisteredAt(value)
 
 			i.RegisteredAt = value
 			return nil
@@ -431,7 +442,7 @@ func (*entCarMutation) registeredAtSequenceMutateFunc(fn func(ctx context.Contex
 func (*entCarMutation) registeredAtLazyMutateFunc(fn func(ctx context.Context, i *EntCarMutator) (time.Time, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.registeredAtType = TypeLazy
-		m.registeredAtFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.registeredAtFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -440,7 +451,7 @@ func (*entCarMutation) registeredAtLazyMutateFunc(fn func(ctx context.Context, i
 				return err
 			}
 
-			creator.SetRegisteredAt(value)
+			i.EntCreator().SetRegisteredAt(value)
 
 			i.RegisteredAt = value
 			return nil
@@ -450,9 +461,9 @@ func (*entCarMutation) registeredAtLazyMutateFunc(fn func(ctx context.Context, i
 func (*entCarMutation) registeredAtDefaultMutateFunc(v time.Time) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.registeredAtType = TypeDefault
-		m.registeredAtFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.registeredAtFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 
-			creator.SetRegisteredAt(v)
+			i.EntCreator().SetRegisteredAt(v)
 
 			i.RegisteredAt = v
 			return nil
@@ -462,7 +473,7 @@ func (*entCarMutation) registeredAtDefaultMutateFunc(v time.Time) func(m *entCar
 func (*entCarMutation) registeredAtFactoryMutateFunc(fn func(ctx context.Context) (time.Time, error)) func(m *entCarMutation) {
 	return func(m *entCarMutation) {
 		m.registeredAtType = TypeFactory
-		m.registeredAtFunc = func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		m.registeredAtFunc = func(ctx context.Context, i *EntCarMutator, c int) error {
 			if fn == nil {
 				return nil
 			}
@@ -471,7 +482,7 @@ func (*entCarMutation) registeredAtFactoryMutateFunc(fn func(ctx context.Context
 				return err
 			}
 
-			creator.SetRegisteredAt(value)
+			i.EntCreator().SetRegisteredAt(value)
 
 			i.RegisteredAt = value
 
@@ -534,8 +545,8 @@ func (f *EntCarMetaFactory) SetAfterCreateFunc(fn func(ctx context.Context, i *e
 	return f
 }
 
-// SetBeforeCreateFunc register a function to be called after struct create
-func (f *EntCarMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, creator *ent.CarCreate) error) *EntCarMetaFactory {
+// SetBeforeCreateFunc register a function to be called before struct create
+func (f *EntCarMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, i *EntCarMutator) error) *EntCarMetaFactory {
 	f.mutation.beforeCreateFunc = fn
 	return f
 }
@@ -543,6 +554,12 @@ func (f *EntCarMetaFactory) SetBeforeCreateFunc(fn func(ctx context.Context, cre
 // SetAfterCreateFunc register a function to be called after struct create
 func (t *entCarTrait) SetAfterCreateFunc(fn func(ctx context.Context, i *ent.Car) error) *entCarTrait {
 	t.updates = append(t.updates, t.mutation.afterCreateMutateFunc(fn))
+	return t
+}
+
+// SetBeforeCreateFunc register a function to be called before struct create
+func (t *entCarTrait) SetBeforeCreateFunc(fn func(ctx context.Context, i *EntCarMutator) error) *entCarTrait {
+	t.updates = append(t.updates, t.mutation.beforeCreateMutateFunc(fn))
 	return t
 }
 
@@ -706,9 +723,9 @@ func (b *EntCarBuilder) CreateV(ctx context.Context) (ent.Car, error) {
 // Create return a new *ent.Car
 func (b *EntCarBuilder) Create(ctx context.Context) (*ent.Car, error) {
 
-	var preSlice = []func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error{}
-	var lazySlice = []func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error{}
-	var postSlice = []func(ctx context.Context, i *ent.Car, c int, creator *ent.CarCreate) error{}
+	var preSlice = []func(ctx context.Context, i *EntCarMutator, c int) error{}
+	var lazySlice = []func(ctx context.Context, i *EntCarMutator, c int) error{}
+	var postSlice = []func(ctx context.Context, i *ent.Car, c int) error{}
 
 	index := b.counter.Get()
 	_ = index
@@ -717,10 +734,10 @@ func (b *EntCarBuilder) Create(ctx context.Context) (*ent.Car, error) {
 	entBuilder := client.Car.Create()
 
 	if b.modelOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntCarMutator, c int) error {
 			value := b.modelOverride
 
-			creator.SetModel(value)
+			i.EntCreator().SetModel(value)
 
 			i.Model = value
 			return nil
@@ -739,10 +756,10 @@ func (b *EntCarBuilder) Create(ctx context.Context) (*ent.Car, error) {
 	}
 
 	if b.ownerOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntCarMutator, c int) error {
 			value := b.ownerOverride
 
-			creator.SetOwner(value)
+			i.EntCreator().SetOwner(value)
 
 			i.Owner = value
 			return nil
@@ -761,10 +778,10 @@ func (b *EntCarBuilder) Create(ctx context.Context) (*ent.Car, error) {
 	}
 
 	if b.ownerIDOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntCarMutator, c int) error {
 			value := b.ownerIDOverride
 
-			creator.SetOwnerID(value)
+			i.EntCreator().SetOwnerID(value)
 
 			i.OwnerID = value
 			return nil
@@ -783,10 +800,10 @@ func (b *EntCarBuilder) Create(ctx context.Context) (*ent.Car, error) {
 	}
 
 	if b.registeredAtOverriden {
-		preSlice = append(preSlice, func(ctx context.Context, i *EntCarMutator, c int, creator *ent.CarCreate) error {
+		preSlice = append(preSlice, func(ctx context.Context, i *EntCarMutator, c int) error {
 			value := b.registeredAtOverride
 
-			creator.SetRegisteredAt(value)
+			i.EntCreator().SetRegisteredAt(value)
 
 			i.RegisteredAt = value
 			return nil
@@ -805,9 +822,12 @@ func (b *EntCarBuilder) Create(ctx context.Context) (*ent.Car, error) {
 	}
 
 	v := &EntCarMutator{}
+
+	v._creator = entBuilder
+
 	for _, f := range preSlice {
 
-		err := f(ctx, v, index, entBuilder)
+		err := f(ctx, v, index)
 
 		if err != nil {
 			return nil, err
@@ -815,18 +835,18 @@ func (b *EntCarBuilder) Create(ctx context.Context) (*ent.Car, error) {
 	}
 	for _, f := range lazySlice {
 
-		err := f(ctx, v, index, entBuilder)
+		err := f(ctx, v, index)
 
 		if err != nil {
 			return nil, err
 		}
 	}
-
 	if b.mutation.beforeCreateFunc != nil {
-		if err := b.mutation.beforeCreateFunc(ctx, entBuilder); err != nil {
+		if err := b.mutation.beforeCreateFunc(ctx, v); err != nil {
 			return nil, err
 		}
 	}
+
 	new, err := entBuilder.Save(ctx)
 	if err != nil {
 		return nil, err
@@ -839,9 +859,7 @@ func (b *EntCarBuilder) Create(ctx context.Context) (*ent.Car, error) {
 		}
 	}
 	for _, f := range postSlice {
-
-		err := f(ctx, new, index, entBuilder)
-
+		err := f(ctx, new, index)
 		if err != nil {
 			return nil, err
 		}
